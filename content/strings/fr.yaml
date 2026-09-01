@@ -208,8 +208,9 @@ sections:
       add-button:
         title: "Appuyer sur le bouton d'ajout"
         body: >-
-          Dans les paramètres, appuyez sur le bouton d'ajout
-          ({ui:SETTINGS_ADD_STUDENT}).
+          Dans les paramètres, appuyez sur l'icône d'ajout entourée ci-dessous.
+          Les boutons de cette rangée n'ont pas de libellé écrit : leur nom
+          apparaît en info-bulle.
       confirm-add:
         title: "Confirmer"
         body: >-
@@ -279,9 +280,11 @@ sections:
       sync-button:
         title: "Synchroniser maintenant"
         body: >-
-          Dans les paramètres, appuyez sur {ui:SYNCHRONIZE_ACCOUNT}.
+          Dans les paramètres, appuyez sur l'icône de synchronisation, dont
+          l'info-bulle indique « {ui:SYNCHRONIZE_ACCOUNT} ».
       codes-sheet:
         title: "Retrouver les codes"
         body: >-
-          « {ui:EXPORT_STUDENT_CODES} » réenregistre la fiche des codes à tout
+          L'icône d'export, dont l'info-bulle indique
+          « {ui:EXPORT_STUDENT_CODES} », réenregistre la fiche des codes à tout
           moment. Utile pour la réimprimer, ou après avoir ajouté {a_learner}.

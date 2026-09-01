@@ -113,6 +113,11 @@ def cmd_build(args: argparse.Namespace) -> int:
                 problems += 1
                 print(f"      ! {warning}")
 
+    for anchor in dict.fromkeys(library.unresolved):
+        problems += 1
+        print(f"  ! annotation anchor {anchor!r} matched no node in the capture"
+              f" -- renamed in the app, or ambiguous across repeated sub-scenes")
+
     print(f"\n{len(built)} manual(s) in {out_dir}")
     if problems:
         print(f"{problems} problem(s) reported above")
@@ -176,6 +181,64 @@ def cmd_shots(_args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_annotations(args: argparse.Namespace) -> int:
+    """Tile every annotated screenshot into one image, to be looked at.
+
+    Annotations are the one part of a manual that no amount of validation can
+    confirm: an anchor can resolve perfectly and still circle the wrong thing.
+    A circle landed on one code symbol instead of the whole student card and
+    the build reported nothing wrong, because nothing was wrong -- the node
+    just was not the one meant. Looking is the only check that catches that.
+    """
+    from PIL import Image, ImageDraw
+
+    content = ContentSet.load(ROOT)
+    locale = (args.locale or [content.locales[0]])[0]
+    library = _library()
+
+    tiles: list[tuple[str, Image.Image]] = []
+    for section in content.structure.get("sections", []):
+        for step in section.get("steps", []):
+            if not step.get("annotations") or not step.get("shot"):
+                continue
+            manual = content.build(locale, content.audiences[0])
+            found = next(
+                (s for s in manual.sections if s.id == section["id"]), None
+            )
+            model_step = next(
+                (s for s in found.steps if s.id == step["id"]), None
+            ) if found else None
+            if model_step is None or not model_step.annotations:
+                continue
+            resolved = library.resolve(model_step.shot, locale, model_step.annotations)
+            image = resolved.image.copy()
+            image.thumbnail((620, 620))
+            tiles.append((f"{section['id']} / {step['id']}", image))
+
+    if not tiles:
+        print("no annotated steps")
+        return 0
+
+    columns = 3
+    tile_w = max(t.width for _, t in tiles)
+    tile_h = max(t.height for _, t in tiles) + 20
+    rows = (len(tiles) + columns - 1) // columns
+    sheet = Image.new("RGB", (columns * tile_w, rows * tile_h), (255, 255, 255))
+    draw = ImageDraw.Draw(sheet)
+    for index, (label, image) in enumerate(tiles):
+        x, y = (index % columns) * tile_w, (index // columns) * tile_h
+        sheet.paste(image, (x, y + 20))
+        draw.text((x + 4, y + 5), label, fill=(0, 0, 0))
+
+    out = Path(args.out) if args.out else BUILD / f"annotations_{locale}.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    sheet.save(out)
+    print(f"{len(tiles)} annotated step(s) -> {out}")
+    for anchor in dict.fromkeys(library.unresolved):
+        print(f"  ! anchor {anchor!r} matched no node in the capture")
+    return 1 if library.unresolved else 0
+
+
 def cmd_sync_ui_strings(args: argparse.Namespace) -> int:
     source = Path(args.csv) if args.csv else find_frontend() / "kalulu_localization.csv"
     if not source.is_file():
@@ -219,6 +282,12 @@ def main(argv: list[str] | None = None) -> int:
 
     lst = subparsers.add_parser("shots", help="screenshot coverage per locale")
     lst.set_defaults(func=cmd_shots)
+
+    ann = subparsers.add_parser(
+        "annotations", help="contact sheet of every annotated screenshot, to eyeball")
+    ann.add_argument("--locale", action="append", help="default: the first locale")
+    ann.add_argument("--out", help="output PNG (default build/annotations_<locale>.png)")
+    ann.set_defaults(func=cmd_annotations)
 
     sync = subparsers.add_parser("sync-ui-strings",
                                  help="refresh the vendored copy of the app's translations")

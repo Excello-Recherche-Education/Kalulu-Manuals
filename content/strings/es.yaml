@@ -209,8 +209,9 @@ sections:
       add-button:
         title: "Pulsar el botón de añadir"
         body: >-
-          En los ajustes, pulse el botón de añadir
-          ({ui:SETTINGS_ADD_STUDENT}).
+          En los ajustes, pulse el icono de añadir señalado abajo. Los botones
+          de esta fila no llevan texto: su nombre aparece como información
+          emergente.
       confirm-add:
         title: "Confirmar"
         body: >-
@@ -280,10 +281,12 @@ sections:
       sync-button:
         title: "Sincronizar ahora"
         body: >-
-          En los ajustes, pulse {ui:SYNCHRONIZE_ACCOUNT}.
+          En los ajustes, pulse el icono de sincronización, cuya información
+          emergente indica «{ui:SYNCHRONIZE_ACCOUNT}».
       codes-sheet:
         title: "Recuperar los códigos"
         body: >-
-          «{ui:EXPORT_STUDENT_CODES}» vuelve a guardar la hoja de códigos en
+          El icono de exportación, cuya información emergente indica
+          «{ui:EXPORT_STUDENT_CODES}», vuelve a guardar la hoja de códigos en
           cualquier momento. Útil para reimprimirla, o después de añadir
           {a_learner}.

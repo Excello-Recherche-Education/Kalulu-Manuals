@@ -392,6 +392,7 @@ func _apply_after(root: Node, steps: Array) -> void:
 func _collect_rects(root: Node, viewport: SubViewport) -> Dictionary:
 	var size := Vector2(viewport.size)
 	var rects: Dictionary = {}
+	var ambiguous: Dictionary = {}
 	var queue: Array[Node] = [root]
 	while not queue.is_empty():
 		var node: Node = queue.pop_back()
@@ -413,5 +414,18 @@ func _collect_rects(root: Node, viewport: SubViewport) -> Dictionary:
 		if not path.contains("@"):
 			rects[path] = value
 		if control.unique_name_in_owner:
-			rects["%%%s" % control.name] = value
+			var short := "%%%s" % control.name
+			# A name that is unique inside a sub-scene stops being unique once
+			# that sub-scene is instanced several times -- every student card
+			# carries its own %Panel1. Last-write-wins would silently hand the
+			# manual one arbitrary card, so an ambiguous name is dropped
+			# instead: the build then reports it as unresolved and the author
+			# anchors to a full path.
+			if short in ambiguous:
+				pass
+			elif short in rects:
+				ambiguous[short] = true
+				rects.erase(short)
+			else:
+				rects[short] = value
 	return rects

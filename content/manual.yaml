@@ -101,8 +101,10 @@ sections:
       - id: pick-student
         shot: settings
         annotations:
-          - {type: rect, node: "%Panel1"}
-          - {type: arrow, node: "%Panel1"}
+          # The whole first student card, not %Panel1 -- that is one of the
+          # three code symbols inside it, and the name repeats per card.
+          - {type: rect, node: "Page/Card/CardMargin/CardContent/StudentsScroll/StudentsContainer/StudentPanel"}
+          - {type: arrow, node: "Page/Card/CardMargin/CardContent/StudentsScroll/StudentsContainer/StudentPanel"}
       - id: edit-name
         shot: student-details
         annotations:
@@ -129,6 +131,10 @@ sections:
       - id: sync-button
         shot: settings
         annotations:
-          - {type: ellipse, node: "%MenuButton"}
+          # NOT %MenuButton -- that is the overflow menu (language, sign out,
+          # delete account). Synchronise is the first icon of the Actions row.
+          - {type: ellipse, node: "Page/ControlsRow/Actions/SynchronizeButton"}
       - id: codes-sheet
         shot: settings
+        annotations:
+          - {type: ellipse, node: "Page/Card/CardMargin/CardContent/CardActions/ExportCodesButton"}

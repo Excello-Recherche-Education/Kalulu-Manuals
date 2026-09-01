@@ -206,8 +206,8 @@ sections:
       add-button:
         title: "Tocar no botão de adicionar"
         body: >-
-          Nas configurações, toque no botão de adicionar
-          ({ui:SETTINGS_ADD_STUDENT}).
+          Nas configurações, toque no ícone de adicionar destacado abaixo. Os
+          botões dessa linha não têm texto: o nome aparece como dica de tela.
       confirm-add:
         title: "Confirmar"
         body: >-
@@ -275,10 +275,12 @@ sections:
       sync-button:
         title: "Sincronizar agora"
         body: >-
-          Nas configurações, toque em {ui:SYNCHRONIZE_ACCOUNT}.
+          Nas configurações, toque no ícone de sincronização, cuja dica de tela
+          indica «{ui:SYNCHRONIZE_ACCOUNT}».
       codes-sheet:
         title: "Recuperar os códigos"
         body: >-
-          «{ui:EXPORT_STUDENT_CODES}» salva novamente a folha de códigos a
+          O ícone de exportação, cuja dica de tela indica
+          «{ui:EXPORT_STUDENT_CODES}», salva novamente a folha de códigos a
           qualquer momento. Útil para reimprimi-la, ou depois de adicionar
           {a_learner}.

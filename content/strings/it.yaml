@@ -207,8 +207,9 @@ sections:
       add-button:
         title: "Premere il pulsante di aggiunta"
         body: >-
-          Nelle impostazioni, premi il pulsante di aggiunta
-          ({ui:SETTINGS_ADD_STUDENT}).
+          Nelle impostazioni, premi l'icona di aggiunta cerchiata qui sotto. I
+          pulsanti di questa fila non hanno un'etichetta scritta: il nome
+          compare come suggerimento.
       confirm-add:
         title: "Confermare"
         body: >-
@@ -276,9 +277,11 @@ sections:
       sync-button:
         title: "Sincronizzare adesso"
         body: >-
-          Nelle impostazioni, premi {ui:SYNCHRONIZE_ACCOUNT}.
+          Nelle impostazioni, premi l'icona di sincronizzazione, il cui
+          suggerimento indica «{ui:SYNCHRONIZE_ACCOUNT}».
       codes-sheet:
         title: "Ritrovare i codici"
         body: >-
-          «{ui:EXPORT_STUDENT_CODES}» risalva il foglio dei codici in qualsiasi
+          L'icona di esportazione, il cui suggerimento indica
+          «{ui:EXPORT_STUDENT_CODES}», risalva il foglio dei codici in qualsiasi
           momento. Utile per ristamparlo, o dopo aver aggiunto {a_learner}.
