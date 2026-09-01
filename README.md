@@ -6,9 +6,9 @@ Source project for the **Kalulu user manuals**.
 app that helps children learn to read through the decoding (grapheme-phoneme) method,
 developed by [Excello Recherche & Éducation](https://github.com/Excello-Recherche-Education).
 
-This repository will hold a **generator** that produces **one manual per language** from a
-single shared source: the common structure and illustrations are written once, and the
-generator emits a separate, complete document for each language Kalulu is available in,
+This repository will hold a **generator** that produces **one manual per language Kalulu
+ships** from a single shared source: the common structure and illustrations are written
+once, and the generator emits a separate, complete, self-contained document per language,
 ready to hand to teachers, parents and volunteers.
 
 It contains no application code — the game itself lives in
@@ -21,11 +21,18 @@ the source format and the output format are still to be chosen.
 
 ## Languages
 
-Kalulu currently ships `fr_FR`, `es_AR`, `es_CO`, `es_UY` and `pt_BR`. Whether that means
-five manuals (one per locale) or three (one per language, with the Spanish variants
-sharing a document) is still open, and depends on how much the Spanish packs actually
-diverge. The generator should be written so the answer is a configuration choice rather
-than a rewrite.
+**One manual per shipped language, always.** Kalulu currently ships `fr_FR`, `es_AR`,
+`es_CO`, `es_UY` and `pt_BR`, so the generator emits **five** documents.
+
+The three Spanish variants may well end up word-for-word identical — that is fine and
+expected. They still get their own manual each. Nothing is ever shared at the *output*
+level: a reader of the Colombian manual must never be handed the Argentinian one, even
+when the two are byte-identical. Deduplicating the output is not an optimisation to make
+later; it is the thing not to do.
+
+Sharing happens at the *source* level instead: whatever is common lives in one place, and
+each language overrides only what differs. Adding a sixth language should mean adding a
+language entry, not copying a manual.
 
 ## Layout
 
