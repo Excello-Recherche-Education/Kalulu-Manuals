@@ -94,6 +94,10 @@ func _capture(shot: Dictionary, out_dir: String) -> void:
 			root = await _register_step(args)
 		"student_details":
 			root = await _student_details(args)
+		"gameplay":
+			root = _gameplay(args)
+		"garden_wheel":
+			root = await _garden_wheel(args)
 		_:
 			error = "unknown recipe %s" % recipe
 
@@ -118,7 +122,9 @@ func _capture(shot: Dictionary, out_dir: String) -> void:
 	# Late tweaks need the scene's @onready vars, so they run after the first frames.
 	if args.has("after"):
 		_apply_after(root, args.get("after", []))
-		for _i in 8:
+		# A menu popup is on screen the next frame; a minigame animates its
+		# pieces in over a second or more, so those shots ask for longer.
+		for _i in int(args.get("after_frames", 8)):
 			await get_tree().process_frame
 
 	var image := await _grab(viewport)
@@ -181,6 +187,119 @@ func _is_flat(image: Image) -> bool:
 			if not probe.get_pixel(x, y).is_equal_approx(first):
 				return false
 	return true
+
+
+## A screen from the game itself, rather than the menus.
+##
+## These need two things the menus do not: an open language pack (the gardens
+## read their graphemes straight out of it) and a student progression, which
+## decides what is unlocked and therefore what the screen even looks like.
+## Both are built here rather than by signing a real student in: a real sign-in
+## would depend on save files on this machine, and the manual's screenshots
+## must be the same on every machine.
+func _gameplay(args: Dictionary) -> Node:
+	var language: String = args.get("language", "fr_FR")
+	Database.language = language
+	# A pack installed on this machine has the sounds too, but only the packs
+	# someone happened to download. Pointing straight at Kalulu-Languages makes
+	# every pack available on any checkout -- the gardens read their graphemes
+	# out of the database, and nothing here needs the audio.
+	var pack_path: String = args.get("pack_path", "")
+	if not pack_path.is_empty() and FileAccess.file_exists(pack_path):
+		Database.db_path = pack_path
+	Database.connect_to_db()
+	if not Database.is_open:
+		push_warning("CAPTURE: no language pack for %s (looked at %s)" % [language, Database.db_path])
+		return null
+
+	UserDataManager.student = args.get("student_name", "Alice")
+	var progression := StudentProgression.new()
+	progression.init_unlocks()
+	# Play the account forward far enough that the screen has something to
+	# show: a fresh progression is one unlocked lesson and eleven grey gardens,
+	# which illustrates nothing.
+	var completed: int = int(args.get("lessons_completed", 0))
+	for lesson: int in range(1, completed + 1):
+		progression.look_and_learn_completed(lesson)
+		# A lesson has one to three minigames, not always three, and
+		# game_completed indexes the array directly -- 0-based. Looping 1..3
+		# regardless both skipped the first game and ran off the end, which is
+		# what filled the wheel with out-of-bounds errors and left it blank.
+		var games: Array = progression.unlocks[lesson]["games"]
+		for game: int in range(games.size()):
+			progression.game_completed(lesson, game)
+
+	# Leave the next lesson part-done, so a wheel photographed here shows the
+	# three states a child sees at once: finished, next up, still locked.
+	var in_progress: int = int(args.get("in_progress_games", 0))
+	if in_progress > 0 and progression.unlocks.has(completed + 1):
+		progression.look_and_learn_completed(completed + 1)
+		var next_games: Array = progression.unlocks[completed + 1]["games"]
+		for game: int in range(mini(in_progress, next_games.size())):
+			progression.game_completed(completed + 1, game)
+	for gate: Variant in args.get("bosses_defeated", []):
+		progression.boss_completed(int(gate))
+	UserDataManager.student_progression = progression
+
+	# A minigame reads which lesson it is running from a static on its base
+	# script, which the gardens screen would normally have filled in. Reached
+	# through `load` rather than the global class name: a class_name that does
+	# not resolve is a *parse* error, which stops the whole harness compiling
+	# and takes every other screenshot down with it.
+	var minigame_script: Resource = load("res://sources/minigames/base/base_minigame.gd")
+	if minigame_script != null:
+		minigame_script.set("transition_data", {
+			"current_lesson_number": int(args.get("lesson_number", 1)),
+			"minigame_number": int(args.get("minigame_number", 1)),
+			"is_final_boss": bool(args.get("is_final_boss", false)),
+		})
+
+	var scene: Node = _instantiate(args.get("scene", ""))
+	if scene != null and args.has("starting_garden") and "starting_garden" in scene:
+		scene.set("starting_garden", int(args.get("starting_garden", 0)))
+	return scene
+
+
+## The minigame wheel: what a lesson actually is, in one picture -- the
+## Look-and-Learn film in the middle, its minigames as wedges around it.
+##
+## It is not a scene of its own. The gardens screen builds it in place when a
+## child taps a lesson, so the only way to photograph it is to build the
+## gardens, find the lesson button, and open it exactly as that tap would.
+##
+## Lesson buttons carry no lesson number: lessons are numbered by walking every
+## garden's buttons in order, so the number is recovered the same way, from how
+## many lessons the gardens before this one hold.
+func _garden_wheel(args: Dictionary) -> Node:
+	var gardens: Node = _gameplay(args)
+	if gardens == null:
+		return null
+	var staging := _stage(gardens)
+	await _settle()
+
+	var garden: Object = gardens.get("current_garden")
+	if garden == null:
+		_unstage(staging, gardens)
+		return gardens
+	var buttons: Array = garden.call("get_lesson_buttons")
+	# Lessons are numbered by walking every garden's buttons in order, so the
+	# number of the first button here is however many lessons the gardens
+	# before it hold.
+	var first: int = 1
+	var distribution: Variant = gardens.get("lesson_distribution")
+	if distribution is Array:
+		for before: int in range(int(garden.get("garden_index"))):
+			first += int((distribution as Array)[before])
+	var lesson: int = int(args.get("lesson_number", first))
+	var index: int = clampi(lesson - first, 0, buttons.size() - 1)
+	gardens.call("_open_minigames_layout", buttons[index], first + index)
+
+	# The wheel fades in over a quarter of a second. Sixteen frames is just
+	# under that, which caught three manuals out of four mid-fade -- and a
+	# half-faded wheel is not blank, so nothing flagged it.
+	await _settle(60)
+	_unstage(staging, gardens)
+	return gardens
 
 
 func _instantiate(scene_path: String) -> Node:
@@ -374,6 +493,16 @@ func _apply_after(root: Node, steps: Array) -> void:
 			"press":
 				if target is BaseButton:
 					(target as BaseButton).emit_signal("pressed")
+			"call":
+				# A minigame only spawns its content once `_start()` runs, and
+				# `_ready` gets there by awaiting Kalulu's intro speech --
+				# which never ends under the harness, so the stage stays empty.
+				# Calling it directly is what a played-through intro would do.
+				var method: String = str(step.get("method", ""))
+				if target.has_method(method):
+					target.call(method)
+				else:
+					push_warning("CAPTURE: %s has no method %s" % [target.name, method])
 			"select":
 				# Settings awaits a live internet check before it selects these,
 				# and that await never resolves under the harness, so the

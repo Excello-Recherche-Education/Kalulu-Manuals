@@ -59,6 +59,16 @@ def find_frontend(explicit: Path | None = None) -> Path:
     )
 
 
+def find_languages(explicit: Path | None = None) -> Path | None:
+    """Locate Kalulu-Languages, the sibling holding the content packs."""
+    here = Path(__file__).resolve().parent.parent
+    for candidate in (explicit, Path(os.environ.get("KALULU_LANGUAGES", "")),
+                      here.parent / "Kalulu-Languages"):
+        if candidate and (candidate / "fr_FR" / "language.db").is_file():
+            return candidate.resolve()
+    return None
+
+
 def find_godot(explicit: str | None = None) -> str:
     """Resolve the Godot binary the same way scripts/kalulu-env.sh does."""
     if explicit:
@@ -99,6 +109,8 @@ class Shot:
         }
 
 
+#: Seconds a single batch may take. Generous because the gameplay screens are
+#: slow: the gardens screen alone loads twelve garden scenes.
 #: Shots per Godot process. A long run degrades: past a few dozen screenshots
 #: the renderer starts handing back uniformly black frames, and the harness
 #: cannot tell -- `save_png` succeeds on a black image. Restarting the process
@@ -118,7 +130,7 @@ def capture(
     *,
     frontend: Path,
     godot: str,
-    timeout: int = 300,
+    timeout: int = 900,
     verbose: bool = False,
 ) -> dict[str, dict]:
     """Run the harness in batches. Returns ``locale/key -> result``."""
@@ -191,6 +203,11 @@ def _capture_batch(
     work.mkdir(exist_ok=True)
     jobs_path = work / "jobs.json"
     result_path = work / "results.json"
+    # Delete last run's results first. Leaving them meant a batch whose Godot
+    # died before writing anything -- a harness that failed to compile, say --
+    # was read back as the *previous* batch's successes, so shots that never
+    # ran were reported OK.
+    result_path.unlink(missing_ok=True)
     # One PNG per key per locale, so two locales never race on one filename.
     jobs = {
         "out_dir": str(out_dir.resolve()),

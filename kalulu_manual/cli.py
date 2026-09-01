@@ -8,7 +8,9 @@ from pathlib import Path
 
 import yaml
 
-from .capture import CaptureError, Shot, capture, find_frontend, find_godot
+from .capture import (
+    CaptureError, Shot, capture, find_frontend, find_godot, find_languages,
+)
 from .content import ContentError, ContentSet
 from .render import build_pdf
 from .shots import ShotLibrary
@@ -26,6 +28,27 @@ def _shot_catalogue() -> dict:
 def _library() -> ShotLibrary:
     # Committed overrides first, then whatever the harness rendered.
     return ShotLibrary([ROOT / "assets" / "screenshots", CAPTURED], BUILD / ".cache")
+
+
+def _resolve_pack(args: dict, locale: str) -> dict:
+    """Turn ``language: "@pack"`` into a real path in Kalulu-Languages.
+
+    Gameplay screens read their letters from a content pack, and the packs are
+    not the manual's languages: there is no Italian pack at all, because Kalulu
+    teaches reading in five locales and speaks four. The mapping is in
+    content/shots.yaml, and says out loud where a manual borrows another
+    language's letters.
+    """
+    if args.get("language") != "@pack":
+        return args
+    catalogue = yaml.safe_load((ROOT / "content" / "shots.yaml").read_text(encoding="utf-8"))
+    packs = (catalogue or {}).get("packs", {})
+    pack = packs.get(locale, "fr_FR")
+    resolved = {**args, "language": pack}
+    languages = find_languages()
+    if languages is not None:
+        resolved["pack_path"] = str(languages / pack / "language.db")
+    return resolved
 
 
 def _selected(requested: list[str] | None, available: list[str], what: str) -> list[str]:
@@ -55,7 +78,7 @@ def cmd_capture(args: argparse.Namespace) -> int:
                 continue
             wanted.append(
                 Shot(key=key, locale=locale, recipe=entry.get("recipe", "scene"),
-                     args=entry.get("args", {}))
+                     args=_resolve_pack(entry.get("args", {}), locale))
             )
     if not wanted:
         print("every screenshot is already captured (use --recapture to redo them)")

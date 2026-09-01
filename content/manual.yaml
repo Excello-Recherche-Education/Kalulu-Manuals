@@ -72,6 +72,27 @@ sections:
           - {type: rect, node: "%Slots"}
       - id: forgot-code
 
+  # Placed before the account chores: an adult who has just installed Kalulu
+  # wants to know what the child is about to do, not how to rename them.
+  - id: how-to-play
+    steps:
+      - id: gardens-chain
+        shot: brain
+      - id: one-garden
+        shot: garden
+      - id: what-is-a-lesson
+        shot: lesson-wheel
+      - id: look-and-learn
+        shot: look-and-learn
+      - id: minigames
+        shot: lesson-wheel
+      - id: boss
+        shot: boss
+      - id: boss-blocks
+      - id: brain-screen
+        shot: brain
+      - id: final-boss
+
   - id: manage-students
     steps:
       - id: open-settings

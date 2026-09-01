@@ -18,9 +18,10 @@ build/manuals/
 └── Kalulu-Manual_teacher_it.pdf     Kalulu-Manual_parent_it.pdf
 ```
 
-Each covers creating an account, signing in, how a child signs in with a symbol
-code, and adding, renaming and deleting students — with an annotated screenshot
-of every screen involved.
+Each covers how the game is played — the chain of gardens, what a lesson is,
+bosses, the brain screen — then creating an account, signing in, how a child
+signs in with a symbol code, and adding, renaming and deleting students, with a
+screenshot of every screen involved.
 
 They are navigable, not just printable: the table of contents is clickable and
 carries page numbers, and every section and step is a bookmark in the reader's
@@ -69,6 +70,16 @@ child during registration, a teacher only says how many students a device has
 and renames them afterwards. `audiences:` in `content/manual.yaml` marks the
 steps that apply to one and not the other, and each language file carries a
 `vocabulary:` block so *élève* becomes *enfant* throughout.
+
+## Content packs
+
+The gameplay screens read their letters from a language **pack**, and the packs
+are not the manual's languages: Kalulu teaches reading in five locales
+(`fr_FR`, `es_AR`, `es_CO`, `es_UY`, `pt_BR`) and its interface speaks four.
+There is no Italian pack at all. `content/shots.yaml` maps each manual to a
+pack and says out loud where one borrows another language's letters; packs are
+read straight from the sibling `Kalulu-Languages` checkout, so a capture does
+not depend on which packs happen to be installed on this machine.
 
 ## Requirements
 

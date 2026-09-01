@@ -177,6 +177,72 @@ sections:
           Os códigos {of_learners} podem ser consultados a qualquer momento em
           {ui:SETTINGS}, na linha «{ui:STUDENT_CODES}».
 
+  how-to-play:
+    title: "Como se joga"
+    intro: >-
+      O Kalulu se apresenta como uma viagem: doze jardins encadeados, uma lição
+      depois da outra. Esta parte descreve o que {the_learner} vê e faz. Aqui
+      não há nada para configurar.
+    steps:
+      gardens-chain:
+        title: "Doze jardins, uma só corrente"
+        body: >-
+          O percurso inteiro cabe em doze jardins, ligados numa ordem fixa.
+          Avança-se sempre no mesmo sentido: um jardim se abre quando o anterior
+          termina, e nenhum é pulado.
+      one-garden:
+        title: "Dentro de um jardim"
+        body: >-
+          Um jardim contém algumas lições, dispostas como fichas ao longo de um
+          caminho. A ficha contornada de dourado é a próxima a jogar; as
+          cinzentas ainda estão fechadas. O caminho sai do jardim e segue para o
+          seguinte.
+        note: >-
+          O jardim floresce aos poucos: as plantas e os animais aparecem à
+          medida que {the_learner} termina as lições.
+      what-is-a-lesson:
+        title: "O que é uma lição"
+        body: >-
+          Ao tocar numa ficha, a lição se abre em roda. No centro, o filme
+          «{ui:LOOKANDLEARN}»; em volta, os minijogos da lição, um por setor. O
+          contorno dourado indica o que vem a seguir.
+      look-and-learn:
+        title: "O filme «{ui:LOOKANDLEARN}»"
+        body: >-
+          Cada lição começa com um filme curto que apresenta o grafema: como se
+          escreve e que som faz. Pode ser repetido quantas vezes quiser.
+      minigames:
+        title: "Os minijogos"
+        body: >-
+          Depois vêm de um a três minijogos, conforme a lição. Cada um é um jogo
+          de animais — águas-vivas, sapos, caranguejos, macacos, periquitos,
+          pinguins, tartarugas, formigas, lagartas — e eles se abrem um após o
+          outro. A lição termina quando todos são vencidos.
+      boss:
+        title: "Os chefes"
+        body: >-
+          Entre dois jardins fica um chefe: palavras para ler, sem imagem nem
+          pista. É preciso vencê-lo para entrar no jardim seguinte.
+      boss-blocks:
+        title: "Quando o chefe resiste"
+        body: >-
+          Depois de duas falhas seguidas, o chefe se bloqueia e o jogo pede um
+          adulto: «{ui:ADULT_BOSS_BLOCK_PROMPT}»
+        note: >-
+          Não é um castigo, é um sinal: a leitura ainda não está firme, e é a
+          hora de refazer essa etapa com {the_learner}.
+      brain-screen:
+        title: "A tela do cérebro"
+        body: >-
+          O cérebro mostra a viagem inteira: os doze jardins de relance, os
+          chefes entre eles e o progresso do jogador. É ali que se vê o caminho
+          percorrido e o que falta.
+      final-boss:
+        title: "O último chefe"
+        body: >-
+          No fim do último jardim espera um chefe final. Vencê-lo desbloqueia
+          algo na tela do cérebro: não descrevemos aqui, é uma surpresa para
+          descobrir com {the_learner}.
   manage-students:
     title: "Acessar as configurações"
     intro: >-

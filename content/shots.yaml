@@ -22,6 +22,30 @@ cast: &cast
   - {device: 1, name: "Chloé",   code: 325, age: 6}
   - {device: 2, name: "Doriane", code: 432, age: 7}
 
+# Which content pack each manual's gameplay screenshots read their letters from.
+#
+# These are the language *packs* -- what children learn to read in -- and they
+# are not the manual's languages. There is no Italian pack at all: Kalulu's
+# interface speaks four languages and it teaches reading in five, and the two
+# lists only partly overlap. Where a manual has no pack of its own it borrows
+# French letters; the screens are the same either way, only the graphemes on
+# them differ.
+packs:
+  fr: fr_FR
+  es: es_AR
+  pt_BR: pt_BR
+  it: fr_FR      # no Italian content pack exists
+
+# Shared starting point for the gameplay screens: an account nine lessons in,
+# one boss down, and the tenth lesson part-played -- far enough along that the
+# screens show finished, next-up and still-locked all at once, which is what
+# makes them worth looking at.
+played: &played
+  language: "@pack"
+  lessons_completed: 9
+  in_progress_games: 1
+  bosses_defeated: [6]
+
 shots:
   welcome:
     recipe: scene
@@ -153,3 +177,42 @@ shots:
       students: *cast
       device: 1
       code: 123
+
+  # --- how to play -----------------------------------------------------------
+
+  garden:
+    recipe: gameplay
+    args:
+      <<: *played
+      scene: "res://sources/gardens/gardens.tscn"
+
+  lesson-wheel:
+    recipe: garden_wheel
+    args:
+      <<: *played
+      scene: "res://sources/gardens/gardens.tscn"
+      lesson_number: 10
+
+  look-and-learn:
+    recipe: gameplay
+    args:
+      <<: *played
+      scene: "res://sources/look_and_learn/look_and_learn.tscn"
+
+  boss:
+    recipe: gameplay
+    args:
+      <<: *played
+      scene: "res://sources/minigames/boss/boss_minigame.tscn"
+      lesson_number: 6
+      # The boss only puts a word up once it starts, and it gets there by
+      # awaiting Kalulu's intro speech, which never ends under the harness.
+      after:
+        - {node: ".", do: "call", method: "_start"}
+      after_frames: 90
+
+  brain:
+    recipe: gameplay
+    args:
+      <<: *played
+      scene: "res://sources/brain/brain.tscn"
