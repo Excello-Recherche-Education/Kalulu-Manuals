@@ -1,0 +1,287 @@
+locale: fr
+# Authored in French, reviewed. The other languages are translated from this one.
+reviewed: true
+
+meta:
+  title: "Manuel d'utilisation de Kalulu"
+  subtitle_teacher: "Guide de l'enseignant — créer un compte, gérer ses élèves"
+  subtitle_parent: "Guide du parent — créer un compte, gérer ses enfants"
+
+labels:
+  contents: "Sommaire"
+  language: "Langue"
+  app_version: "Version de Kalulu"
+  generated: "Document généré le"
+  unreviewed: "BROUILLON — cette traduction n'a pas encore été relue par un locuteur natif."
+
+vocabulary:
+  teacher:
+    the_learners: "les élèves"
+    of_learners: "des élèves"
+    of_the_learner: "de l'élève"
+    learner: "élève"
+    learners: "élèves"
+    a_learner: "un élève"
+    the_learner: "l'élève"
+    adult: "l'enseignant"
+    you_are: "enseignant"
+  parent:
+    the_learners: "les enfants"
+    of_learners: "des enfants"
+    of_the_learner: "de l'enfant"
+    learner: "enfant"
+    learners: "enfants"
+    a_learner: "un enfant"
+    the_learner: "l'enfant"
+    adult: "le parent"
+    you_are: "parent"
+
+sections:
+  getting-started:
+    title: "Prise en main"
+    intro: >-
+      Kalulu apprend à lire aux enfants par la méthode du décodage. Ce manuel
+      couvre tout ce qui se passe avant le jeu lui-même : créer le compte,
+      s'y connecter, et gérer {the_learners}.
+    steps:
+      welcome:
+        title: "L'écran d'accueil"
+        body: >-
+          À l'ouverture de l'application, Kalulu affiche l'écran d'accueil.
+          C'est le point de départ pour se connecter à un compte existant
+          comme pour en créer un nouveau.
+      two-kinds-of-login:
+        title: "Deux connexions à ne pas confondre"
+        body: >-
+          Kalulu distingue la connexion <b>adulte</b> et la connexion
+          <b>{learner}</b>. {adult} se connecte avec une adresse mail et un mot
+          de passe, pour gérer le compte. {the_learner}, lui, se connecte avec
+          un code de trois symboles, sans clavier ni mot de passe.
+        note: >-
+          Les paramètres du compte sont réservés aux adultes. Kalulu demande une
+          petite vérification avant d'y laisser entrer.
+
+  create-account:
+    title: "Créer un compte"
+    intro: >-
+      La création de compte se fait une seule fois, en quelques écrans. Vous
+      pourrez tout modifier ensuite dans {ui:SETTINGS}.
+    steps:
+      open-signup:
+        title: "Ouvrir la création de compte"
+        body: >-
+          Sur l'écran d'accueil, choisissez l'onglet {ui:CREATE_ACCOUNT}.
+      language:
+        title: "Choisir la langue"
+        body: >-
+          Sélectionnez la langue dans laquelle {the_learners} vont apprendre à lire,
+          puis appuyez sur {ui:NEXT}.
+        note: >-
+          C'est la langue du contenu pédagogique, et elle détermine les leçons
+          téléchargées. Elle est indépendante de la langue de l'interface.
+      account-type:
+        title: "Indiquer le type de compte"
+        body: >-
+          Choisissez « {ui:TEACHER} » ou « {ui:PARENT} ». Vous êtes
+          {you_are} : c'est ce choix qui décide de la suite des questions.
+      method:
+        title: "Choisir la méthode d'éducation"
+        body: >-
+          Indiquez si vous utilisez uniquement l'application, ou si vous
+          l'accompagnez des livrets et des jeux en papier.
+      devices:
+        title: "Indiquer le nombre d'appareils"
+        body: >-
+          Précisez sur combien d'appareils vos élèves travailleront. Kalulu
+          répartira les élèves appareil par appareil.
+      students-count:
+        title: "Indiquer le nombre d'élèves par appareil"
+        body: >-
+          Pour chaque appareil, indiquez combien d'élèves l'utiliseront. Kalulu
+          crée les élèves et leur attribue automatiquement un code d'accès.
+        note: >-
+          Les élèves sont créés sans nom à cette étape. Vous les renommerez
+          ensuite dans {ui:SETTINGS} — voir « Renommer {a_learner} ».
+      player:
+        title: "Renseigner chaque enfant"
+        body: >-
+          Saisissez le prénom et l'âge de chaque enfant. C'est ici que vous
+          choisissez les identifiants qui s'afficheront dans l'application.
+        note: >-
+          En cas d'erreur, ou plus tard si besoin, ces informations restent
+          modifiables — voir « Renommer {a_learner} ».
+      credentials:
+        title: "Saisir vos identifiants"
+        body: >-
+          Entrez votre adresse mail et choisissez un mot de passe. Ce sont vos
+          identifiants d'adulte : ils servent à retrouver le compte sur un autre
+          appareil et à accéder aux paramètres.
+      conditions:
+        title: "Accepter les conditions générales"
+        body: >-
+          Lisez les conditions générales d'utilisation et cochez la case pour
+          les accepter.
+      recap:
+        title: "Vérifier le récapitulatif"
+        body: >-
+          Le dernier écran résume le compte : adresse mail, type de compte,
+          nombre d'appareils et {the_learners} avec leur code. Vérifiez, puis
+          confirmez.
+        note: >-
+          Le bouton « {ui:SAVE_ALL_CODES} » enregistre la fiche des codes dans
+          un fichier. Gardez-la : c'est avec ces codes que {the_learners} se
+          connectent.
+      created:
+        title: "Le compte est créé"
+        body: >-
+          Kalulu confirme la création du compte. {ui:CODES_AVAILABLE_IN_SETTINGS}
+
+  sign-in:
+    title: "Se connecter à son compte"
+    intro: >-
+      La connexion adulte sert à retrouver son compte, sur ce téléphone ou sur
+      un autre appareil.
+    steps:
+      adult-sign-in:
+        title: "Entrer ses identifiants"
+        body: >-
+          Sur l'écran d'accueil, restez sur l'onglet de connexion, saisissez
+          votre adresse mail et votre mot de passe, puis appuyez sur
+          {ui:NEXT}.
+        note: >-
+          Mot de passe oublié ? Utilisez « {ui:RESET_PASSWORD} » : Kalulu envoie
+          un lien à votre adresse mail.
+      pick-device:
+        title: "Choisir l'appareil"
+        body: >-
+          Si votre compte couvre plusieurs appareils, Kalulu demande lequel est
+          celui-ci. Chaque appareil a ses propres élèves.
+
+  student-sign-in:
+    title: "Connexion {learner}"
+    intro: >-
+      {the_learner} n'a ni adresse mail ni mot de passe : il se connecte avec un
+      code de trois symboles, qu'il peut reconnaître sans savoir lire.
+    steps:
+      code-screen:
+        title: "L'écran de connexion"
+        body: >-
+          Une fois l'appareil choisi, Kalulu affiche le clavier de symboles.
+          L'écran indique en haut de quel appareil il s'agit.
+      enter-code:
+        title: "Saisir le code"
+        body: >-
+          {the_learner} appuie sur ses trois symboles, dans l'ordre. Les cases
+          en haut se remplissent au fur et à mesure. Le jeu démarre dès que le
+          code est complet.
+      forgot-code:
+        title: "Code oublié"
+        body: >-
+          Les codes {of_learners} sont consultables à tout moment dans
+          {ui:SETTINGS}, à la ligne « {ui:STUDENT_CODES} ».
+
+  manage-students:
+    title: "Accéder aux paramètres"
+    intro: >-
+      Tout ce qui concerne {the_learners} — ajouter, renommer, supprimer — se passe
+      dans les paramètres, réservés aux adultes.
+    steps:
+      open-settings:
+        title: "Ouvrir les paramètres"
+        body: >-
+          Depuis l'écran de connexion {learner}, appuyez sur {ui:SETTINGS}.
+      adult-check:
+        title: "Prouver que vous êtes un adulte"
+        body: >-
+          Kalulu affiche une petite vérification pour s'assurer qu'{a_learner}
+          n'entre pas seul dans les paramètres. Suivez l'instruction affichée.
+      student-list:
+        title: "La liste {of_learners}"
+        body: >-
+          Les paramètres affichent {the_learners} de l'appareil sélectionné, chacun
+          avec son code. Les pastilles du haut permettent de passer d'un
+          appareil à l'autre.
+
+  add-student:
+    title: "Ajouter {a_learner}"
+    steps:
+      add-button:
+        title: "Appuyer sur le bouton d'ajout"
+        body: >-
+          Dans les paramètres, appuyez sur le bouton d'ajout
+          ({ui:SETTINGS_ADD_STUDENT}).
+      confirm-add:
+        title: "Confirmer"
+        body: >-
+          Kalulu demande confirmation : « {ui:ADD_STUDENT_POPUP} ». {the_learner}
+          est créé avec un nouveau code, que vous pourrez renommer aussitôt.
+      internet-needed:
+        title: "Une connexion internet est nécessaire"
+        body: >-
+          {ui:SETTINGS_INTERNET_MANDATORY_TO_ADD_STUDENT}. C'est le serveur qui
+          garantit que le code attribué n'est pas déjà pris. Hors connexion, le
+          bouton d'ajout n'apparaît pas.
+
+  rename-student:
+    title: "Renommer {a_learner}"
+    intro: >-
+      Le nom d'{a_learner} peut être modifié à tout moment, sans conséquence sur
+      sa progression ni sur son code.
+    steps:
+      pick-student:
+        title: "Choisir {the_learner}"
+        body: >-
+          Dans la liste, appuyez sur {the_learner} que vous voulez renommer.
+      edit-name:
+        title: "Modifier le nom"
+        body: >-
+          La fiche {of_the_learner} s'ouvre. Appuyez sur le nom pour l'éditer,
+          puis validez.
+      close-panel:
+        title: "Fermer la fiche"
+        body: >-
+          Fermez la fenêtre avec la croix en haut à droite. Le nouveau nom
+          apparaît immédiatement dans la liste.
+
+  delete-student:
+    title: "Supprimer {a_learner}"
+    intro: >-
+      La suppression retire {the_learner} du compte et libère son code.
+    steps:
+      open-panel:
+        title: "Ouvrir la fiche et appuyer sur la corbeille"
+        body: >-
+          Ouvrez la fiche {of_the_learner}, puis appuyez sur l'icône de
+          corbeille.
+      confirm-delete:
+        title: "Confirmer la suppression"
+        body: >-
+          Kalulu demande confirmation : « {ui:DELETE_STUDENT_POPUP} »
+      irreversible:
+        title: "C'est définitif"
+        body: >-
+          La progression {of_the_learner} est perdue et n'est pas récupérable,
+          y compris depuis le serveur. En cas de doute, renommez plutôt la fiche
+          et réutilisez-la.
+
+  synchronise:
+    title: "Synchronisation et fiche des codes"
+    steps:
+      why:
+        title: "À quoi sert la synchronisation"
+        body: >-
+          Kalulu fonctionne hors connexion et envoie les données au serveur dès
+          qu'internet est disponible. La synchronisation manuelle sert à forcer
+          cet envoi, par exemple juste après avoir renommé {a_learner}.
+        note: >-
+          Ce n'est pas obligatoire : la mise à jour part de toute façon à la
+          prochaine connexion {of_the_learner}.
+      sync-button:
+        title: "Synchroniser maintenant"
+        body: >-
+          Dans les paramètres, appuyez sur {ui:SYNCHRONIZE_ACCOUNT}.
+      codes-sheet:
+        title: "Retrouver les codes"
+        body: >-
+          « {ui:EXPORT_STUDENT_CODES} » réenregistre la fiche des codes à tout
+          moment. Utile pour la réimprimer, ou après avoir ajouté {a_learner}.

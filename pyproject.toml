@@ -1,0 +1,20 @@
+[project]
+name = "kalulu-manual"
+version = "0.1.0"
+description = "Generator for the Kalulu user manuals — one PDF per language, per audience"
+requires-python = ">=3.11"
+dependencies = [
+    "reportlab>=4.0",
+    "pyyaml>=6.0",
+    "pillow>=10.0",
+]
+
+[project.scripts]
+kalulu-manual = "kalulu_manual.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["kalulu_manual"]

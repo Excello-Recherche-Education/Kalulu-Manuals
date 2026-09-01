@@ -1,0 +1,417 @@
+extends Node
+## Screenshot harness for the Kalulu user manuals.
+##
+## This file does not live in Kalulu-Frontend. The manual generator copies it
+## into the frontend project under `manual_capture/`, runs it, and deletes it
+## again, so the app repository carries nothing for the sake of documentation.
+##
+## It must be run as a *scene* (`Godot --path <frontend> res://manual_capture/capture.tscn`)
+## and **not** through `--script`: a `--script` run compiles before the autoloads
+## register, and every menu here needs UserDataManager, Log and Database.
+## It must also run **without** `--headless`, whose dummy rasterizer renders
+## nothing and hands back blank images.
+##
+## Jobs arrive as JSON in the KALULU_MANUAL_JOBS environment variable (a path).
+## A result JSON is written next to it so the Python side can report per-shot
+## success without scraping stdout.
+
+const VIEWPORT_SIZE := Vector2i(2560, 1800)
+## Frames to let the scene settle. Menus animate in, fonts finish shaping and
+## OpeningCurtain runs a tween; a low count captures a half-drawn screen.
+const SETTLE_FRAMES := 24
+## How many times to re-read a viewport that came back as one flat colour.
+const GRAB_ATTEMPTS := 3
+
+var _results: Array = []
+
+
+func _ready() -> void:
+	# macOS stops driving an occluded window, and a window that is not being
+	# drawn hands back black textures. Capture is an explicit developer action,
+	# so a window that insists on staying visible for its duration is the right
+	# trade against silently blank screenshots.
+	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, true)
+	DisplayServer.window_move_to_foreground()
+
+	var jobs_path := OS.get_environment("KALULU_MANUAL_JOBS")
+	if jobs_path.is_empty():
+		push_error("KALULU_MANUAL_JOBS is not set")
+		get_tree().quit(2)
+		return
+
+	var jobs: Dictionary = _read_json(jobs_path)
+	if jobs.is_empty():
+		get_tree().quit(2)
+		return
+
+	var out_dir: String = jobs.get("out_dir", "")
+	DirAccess.make_dir_recursive_absolute(out_dir)
+
+	for shot: Dictionary in jobs.get("shots", []):
+		await _capture(shot, out_dir)
+
+	var result_path: String = jobs.get("result_path", "")
+	if not result_path.is_empty():
+		var handle := FileAccess.open(result_path, FileAccess.WRITE)
+		if handle:
+			handle.store_string(JSON.stringify({"results": _results}, "  "))
+			handle.close()
+
+	print("CAPTURE: done, %d shots" % _results.size())
+	get_tree().quit(0)
+
+
+func _read_json(path: String) -> Dictionary:
+	var handle := FileAccess.open(path, FileAccess.READ)
+	if handle == null:
+		push_error("cannot read jobs file: %s" % path)
+		return {}
+	var parsed: Variant = JSON.parse_string(handle.get_as_text())
+	handle.close()
+	return parsed if parsed is Dictionary else {}
+
+
+func _capture(shot: Dictionary, out_dir: String) -> void:
+	var key: String = shot.get("key", "unnamed")
+	var locale: String = shot.get("locale", "fr")
+	var recipe: String = shot.get("recipe", "scene")
+	var args: Dictionary = shot.get("args", {})
+	# One directory per locale: the same key is captured once per language and
+	# they must not overwrite each other.
+	var locale_dir := "%s/%s" % [out_dir, locale]
+	DirAccess.make_dir_recursive_absolute(locale_dir)
+	var path := "%s/%s.png" % [locale_dir, key]
+
+	TranslationServer.set_locale(locale)
+	_seed_account(args)
+
+	var root: Node = null
+	var error := ""
+	match recipe:
+		"scene":
+			root = _instantiate(args.get("scene", ""))
+		"register_step":
+			root = await _register_step(args)
+		"student_details":
+			root = await _student_details(args)
+		_:
+			error = "unknown recipe %s" % recipe
+
+	if root == null and error.is_empty():
+		error = "scene failed to instantiate"
+
+	if not error.is_empty():
+		_results.append({"key": key, "locale": locale, "ok": false, "error": error})
+		push_warning("CAPTURE %s: %s" % [key, error])
+		return
+
+	var viewport := SubViewport.new()
+	viewport.size = VIEWPORT_SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	viewport.handle_input_locally = true
+	add_child(viewport)
+	viewport.add_child(root)
+
+	for _i in SETTLE_FRAMES:
+		await get_tree().process_frame
+
+	# Late tweaks need the scene's @onready vars, so they run after the first frames.
+	if args.has("after"):
+		_apply_after(root, args.get("after", []))
+		for _i in 8:
+			await get_tree().process_frame
+
+	var image := await _grab(viewport)
+	var crop: Variant = args.get("crop", null)
+	if crop is Array and (crop as Array).size() == 4:
+		var c: Array = crop
+		image = image.get_region(Rect2i(
+			int(float(c[0]) * VIEWPORT_SIZE.x), int(float(c[1]) * VIEWPORT_SIZE.y),
+			int(float(c[2]) * VIEWPORT_SIZE.x), int(float(c[3]) * VIEWPORT_SIZE.y)))
+	var save_error := image.save_png(path)
+	# Where every named control ended up, as fractions of the capture. The
+	# manual anchors its circles and arrows to node names rather than to
+	# hand-measured boxes: a button is not the same width in Italian as in
+	# French, and a hand-tuned box is wrong in three languages out of four.
+	var rects := _collect_rects(root, viewport)
+	viewport.queue_free()
+
+	_results.append({
+		"key": key, "locale": locale, "ok": save_error == OK,
+		"path": path, "rects": rects,
+		"error": "" if save_error == OK else "save failed: %d" % save_error,
+	})
+	print("CAPTURE: %s (%s) -> %s" % [key, locale, path])
+
+
+## Reads the viewport's texture, retrying until it is actually drawn.
+##
+## Waiting a fixed number of frames is not enough: a heavy scene may still be
+## streaming fonts and textures, and the grab can land before anything is
+## rasterised. The texture then comes back one flat colour and `save_png`
+## succeeds on it, so the failure is silent and ends up in the PDF.
+##
+## Two things this deliberately does not do:
+##
+## * `RenderingServer.force_draw()` -- called from inside a frame it deadlocks.
+## * `await RenderingServer.frame_post_draw` -- that signal stops firing when
+##   the window is occluded, so the await never returns and the whole run sits
+##   there until the driver's timeout kills it. `process_frame` always ticks,
+##   so a stalled renderer costs a few frames and a reported failure rather
+##   than a hung batch.
+func _grab(viewport: SubViewport) -> Image:
+	var image: Image = viewport.get_texture().get_image()
+	for _attempt in GRAB_ATTEMPTS:
+		if not _is_flat(image):
+			return image
+		await _settle()
+		image = viewport.get_texture().get_image()
+	push_warning("CAPTURE: viewport still blank after %d attempts" % GRAB_ATTEMPTS)
+	return image
+
+
+## True when every pixel is the same colour, which no real screen ever is.
+## Sampled on a shrunk copy: exact, and far cheaper than four megapixels.
+func _is_flat(image: Image) -> bool:
+	var probe := image.duplicate() as Image
+	probe.resize(48, 34, Image.INTERPOLATE_NEAREST)
+	var first := probe.get_pixel(0, 0)
+	for y in probe.get_height():
+		for x in probe.get_width():
+			if not probe.get_pixel(x, y).is_equal_approx(first):
+				return false
+	return true
+
+
+func _instantiate(scene_path: String) -> Node:
+	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+		return null
+	var packed: PackedScene = load(scene_path)
+	return packed.instantiate() if packed else null
+
+
+## Builds a plausible signed-in account so the settings screens have something
+## to draw. Names and codes are fixed, never random: a manual whose screenshots
+## reshuffle on every build produces a meaningless diff.
+func _seed_account(args: Dictionary) -> void:
+	if not args.get("seed_account", false):
+		return
+	var settings := TeacherSettings.new()
+	settings.account_type = (TeacherSettings.AccountType.PARENT
+		if args.get("account_type", "teacher") == "parent"
+		else TeacherSettings.AccountType.TEACHER)
+	settings.education_method = TeacherSettings.EducationMethod.APP_ONLY
+	settings.email = args.get("email", "marie.dupont@example.org")
+	settings._language = TranslationServer.get_locale()
+
+	var students: Dictionary[int, Array] = {}
+	for entry: Dictionary in args.get("students", []):
+		var device: int = int(entry.get("device", 1))
+		if not students.has(device):
+			students[device] = [] as Array[StudentData]
+		var data := StudentData.new()
+		data.name = entry.get("name", "")
+		data.code = int(entry.get("code", 123))
+		data.age = int(entry.get("age", 6))
+		students[device].append(data)
+	settings.students = students
+	UserDataManager.teacher_settings = settings
+
+
+## A registration step, composed inside the real registration screen.
+##
+## The step scenes are fragments: on their own they render as widgets floating
+## on nothing, because register.tscn owns the background and the progress bar.
+## So the real screen is built first and its current step swapped for the one
+## being documented -- after it is alive, because register.tscn fills that
+## container in its own `_ready`, which would otherwise undo the swap.
+##
+## `on_enter()` matters too: the flow calls it, not the step, and it is what
+## fills the dropdowns. Skipping it yields an empty-looking control that is
+## technically the right scene and shows nothing a reader would recognise.
+func _register_step(args: Dictionary) -> Node:
+	var screen: Node = _instantiate("res://sources/menus/register/register.tscn")
+	var step: Node = _instantiate(args.get("scene", ""))
+	if step == null:
+		return null
+	if step is Step:
+		var data := TeacherSettings.new()
+		data.account_type = (TeacherSettings.AccountType.PARENT
+			if args.get("account_type", "teacher") == "parent"
+			else TeacherSettings.AccountType.TEACHER)
+		data.education_method = TeacherSettings.EducationMethod.APP_ONLY
+		data.devices_count = int(args.get("devices_count", 1))
+		data._language = TranslationServer.get_locale()
+		data.email = args.get("email", "")
+		# The recap step totals whatever the flow gathered, so an unseeded one
+		# honestly reports zero devices and zero students -- true, and useless
+		# as an illustration. Give it the same cast the rest of the manual uses.
+		var seeded: Dictionary[int, Array] = {}
+		for entry: Dictionary in args.get("students", []):
+			var device: int = int(entry.get("device", 1))
+			if not seeded.has(device):
+				seeded[device] = [] as Array[StudentData]
+			var student := StudentData.new()
+			student.name = entry.get("name", "")
+			student.code = int(entry.get("code", 123))
+			student.age = int(entry.get("age", 6))
+			seeded[device].append(student)
+		if not seeded.is_empty():
+			data.students = seeded
+			data.devices_count = seeded.size()
+		(step as Step).data = data
+		# `question` holds a translation key with a {number} placeholder that the
+		# flow -- not the step -- fills in. Left alone it renders as the literal
+		# "{number}" on the page.
+		if args.has("number") and "question" in step:
+			var raw: String = str(step.get("question"))
+			step.set("question", tr(raw).format({"number": int(args.get("number", 1))}))
+	if screen == null:
+		return step
+
+	var staging := _stage(screen)
+	await _settle()
+
+	var holder: Node = screen.get_node_or_null("%Steps")
+	if holder == null:
+		holder = screen.get_node_or_null("Steps")
+	if holder == null:
+		_unstage(staging, screen)
+		return step
+	for child: Node in holder.get_children():
+		holder.remove_child(child)
+		child.queue_free()
+	holder.add_child(step)
+	if step.has_method("on_enter"):
+		step.call("on_enter")
+	await _settle(10)
+
+	_unstage(staging, screen)
+	return screen
+
+
+## Builds a scene in a throwaway viewport so its `_ready` runs before the
+## harness pokes at it. The caller re-parents the result into the viewport it
+## actually photographs.
+func _stage(node: Node) -> SubViewport:
+	var viewport := SubViewport.new()
+	viewport.size = VIEWPORT_SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	add_child(viewport)
+	viewport.add_child(node)
+	return viewport
+
+
+func _unstage(viewport: SubViewport, node: Node) -> void:
+	viewport.remove_child(node)
+	viewport.queue_free()
+
+
+func _settle(frames: int = SETTLE_FRAMES) -> void:
+	for _i in frames:
+		await get_tree().process_frame
+
+
+## The student detail popup, opened over the settings screen it belongs to.
+##
+## It is a hidden child of teacher_settings rather than a scene of its own, so
+## the only honest way to photograph it is to build the settings screen and open
+## it exactly as a tap would.
+func _student_details(args: Dictionary) -> Node:
+	var settings: Node = _instantiate("res://sources/menus/settings/teacher_settings.tscn")
+	if settings == null:
+		return null
+	var staging := _stage(settings)
+	await _settle()
+
+	var popup := settings.get_node_or_null("LessonUnlocks")
+	if popup != null:
+		if "teacher_settings" in popup:
+			popup.set("teacher_settings", settings)
+		if popup.has_method("_on_device_changed"):
+			popup.call("_on_device_changed", int(args.get("device", 1)))
+		if popup.has_method("_on_student_changed"):
+			popup.call("_on_student_changed", int(args.get("code", 123)))
+		if popup is CanvasItem:
+			(popup as CanvasItem).show()
+	await _settle(10)
+	_unstage(staging, settings)
+	return settings
+
+
+## Small declarative tweaks applied after the scene is alive: filling a text
+## field, revealing a popup, selecting a tab. Anything more elaborate belongs in
+## a named recipe, not in a string the content file can smuggle in.
+func _apply_after(root: Node, steps: Array) -> void:
+	for raw: Variant in steps:
+		if raw is not Dictionary:
+			continue
+		var step: Dictionary = raw
+		var target := root.get_node_or_null(NodePath(step.get("node", "")))
+		if target == null:
+			push_warning("CAPTURE: no node %s" % step.get("node", ""))
+			continue
+		match step.get("do", ""):
+			"set_text":
+				if "text" in target:
+					target.set("text", step.get("value", ""))
+			"show":
+				# Popups here are CanvasLayers as often as Controls, and a
+				# CanvasLayer is not a CanvasItem -- testing for CanvasItem
+				# silently skipped every popup in the manual. Some carry their
+				# own entry point, which does more than flip a flag.
+				if target.has_method("show_popup"):
+					target.call("show_popup")
+				elif target.has_method("show_block"):
+					target.call("show_block")
+				elif "visible" in target:
+					target.set("visible", true)
+				else:
+					push_warning("CAPTURE: cannot show %s" % target.name)
+			"hide":
+				if "visible" in target:
+					target.set("visible", false)
+			"press":
+				if target is BaseButton:
+					(target as BaseButton).emit_signal("pressed")
+			"select":
+				# Settings awaits a live internet check before it selects these,
+				# and that await never resolves under the harness, so the
+				# dropdowns photograph empty. Pick the entry directly.
+				if target is OptionButton:
+					(target as OptionButton).select(int(step.get("value", 0)))
+
+
+## Global rects of the scene's named Controls, normalised against the viewport.
+##
+## Recorded under two keys: the scene-unique name (`%NextButton`) when the
+## author marked one, and always the path from the scene root
+## (`Footer/TeacherButton`), because plenty of useful controls were never marked
+## unique. Godot's own generated names (`@OptionButton@3058`) are skipped: they
+## are renumbered on every run and would be a trap to anchor to.
+func _collect_rects(root: Node, viewport: SubViewport) -> Dictionary:
+	var size := Vector2(viewport.size)
+	var rects: Dictionary = {}
+	var queue: Array[Node] = [root]
+	while not queue.is_empty():
+		var node: Node = queue.pop_back()
+		for child: Node in node.get_children():
+			queue.append(child)
+		if node is not Control or String(node.name).begins_with("@"):
+			continue
+		var control := node as Control
+		if not control.is_visible_in_tree():
+			continue
+		var rect := control.get_global_rect()
+		if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+			continue
+		var value: Array = [
+			rect.position.x / size.x, rect.position.y / size.y,
+			rect.size.x / size.x, rect.size.y / size.y,
+		]
+		var path := String(root.get_path_to(control))
+		if not path.contains("@"):
+			rects[path] = value
+		if control.unique_name_in_owner:
+			rects["%%%s" % control.name] = value
+	return rects

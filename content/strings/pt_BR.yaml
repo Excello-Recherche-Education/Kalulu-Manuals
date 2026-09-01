@@ -1,0 +1,284 @@
+locale: pt_BR
+# Translated from fr.yaml. Not yet reviewed by a native speaker.
+reviewed: false
+
+meta:
+  title: "Manual de uso do Kalulu"
+  subtitle_teacher: "Guia do professor — criar uma conta, gerenciar os alunos"
+  subtitle_parent: "Guia da família — criar uma conta, gerenciar as crianças"
+
+labels:
+  contents: "Sumário"
+  language: "Idioma"
+  app_version: "Versão do Kalulu"
+  generated: "Documento gerado em"
+  unreviewed: "RASCUNHO — esta tradução ainda não foi revisada por um falante nativo."
+
+vocabulary:
+  teacher:
+    the_learners: "os alunos"
+    of_learners: "dos alunos"
+    of_the_learner: "do aluno"
+    learner: "aluno"
+    learners: "alunos"
+    a_learner: "um aluno"
+    the_learner: "o aluno"
+    adult: "o professor"
+    you_are: "professor"
+  parent:
+    the_learners: "as crianças"
+    of_learners: "das crianças"
+    of_the_learner: "da criança"
+    learner: "criança"
+    learners: "crianças"
+    a_learner: "uma criança"
+    the_learner: "a criança"
+    adult: "a família"
+    you_are: "mãe, pai ou responsável"
+
+sections:
+  getting-started:
+    title: "Primeiros passos"
+    intro: >-
+      O Kalulu ensina a ler pelo método da decodificação. Este manual cobre tudo
+      o que acontece antes do jogo: criar a conta, entrar nela e gerenciar
+      {the_learners}.
+    steps:
+      welcome:
+        title: "A tela inicial"
+        body: >-
+          Ao abrir o aplicativo, o Kalulu mostra a tela inicial. É o ponto de
+          partida tanto para entrar em uma conta existente quanto para criar uma
+          nova.
+      two-kinds-of-login:
+        title: "Dois acessos que não devem ser confundidos"
+        body: >-
+          O Kalulu distingue o acesso <b>do adulto</b> do acesso
+          <b>{learner}</b>. {adult} entra com um e-mail e uma senha, para
+          gerenciar a conta. {the_learner} entra com um código de três símbolos,
+          sem teclado nem senha.
+        note: >-
+          As configurações da conta são reservadas aos adultos. O Kalulu pede
+          uma pequena verificação antes de deixar entrar.
+
+  create-account:
+    title: "Criar uma conta"
+    intro: >-
+      A conta é criada uma única vez, em algumas telas. Depois você poderá
+      alterar tudo em {ui:SETTINGS}.
+    steps:
+      open-signup:
+        title: "Abrir a criação de conta"
+        body: >-
+          Na tela inicial, escolha a aba {ui:CREATE_ACCOUNT}.
+      language:
+        title: "Escolher o idioma"
+        body: >-
+          Selecione o idioma no qual {the_learners} vão aprender a ler e toque em
+          {ui:NEXT}.
+        note: >-
+          É o idioma do conteúdo pedagógico e determina as lições baixadas. Ele
+          é independente do idioma da interface.
+      account-type:
+        title: "Indicar o tipo de conta"
+        body: >-
+          Escolha «{ui:TEACHER}» ou «{ui:PARENT}». Você é {you_are}: essa
+          escolha decide as perguntas seguintes.
+      method:
+        title: "Escolher o método de ensino"
+        body: >-
+          Indique se você usa apenas o aplicativo ou se o acompanha com os
+          cadernos e os jogos em papel.
+      devices:
+        title: "Indicar o número de dispositivos"
+        body: >-
+          Informe em quantos dispositivos seus alunos vão trabalhar. O Kalulu
+          distribuirá os alunos dispositivo por dispositivo.
+      students-count:
+        title: "Indicar o número de alunos por dispositivo"
+        body: >-
+          Para cada dispositivo, informe quantos alunos vão usá-lo. O Kalulu
+          cria os alunos e atribui automaticamente um código de acesso a cada
+          um.
+        note: >-
+          Nesta etapa os alunos são criados sem nome. Você os renomeará depois
+          em {ui:SETTINGS} — veja «Renomear {a_learner}».
+      player:
+        title: "Preencher os dados de cada criança"
+        body: >-
+          Digite o nome e a idade de cada criança. É aqui que você escolhe os
+          identificadores que aparecerão no aplicativo.
+        note: >-
+          Em caso de erro, ou mais tarde se necessário, esses dados continuam
+          editáveis — veja «Renomear {a_learner}».
+      credentials:
+        title: "Informar suas credenciais"
+        body: >-
+          Digite seu e-mail e escolha uma senha. São suas credenciais de adulto:
+          servem para recuperar a conta em outro dispositivo e para acessar as
+          configurações.
+      conditions:
+        title: "Aceitar os termos de uso"
+        body: >-
+          Leia os termos gerais de uso e marque a caixa para aceitá-los.
+      recap:
+        title: "Conferir o resumo"
+        body: >-
+          A última tela resume a conta: e-mail, tipo de conta, número de
+          dispositivos e {the_learners} com o respectivo código. Confira e confirme.
+        note: >-
+          O botão «{ui:SAVE_ALL_CODES}» salva a folha de códigos em um arquivo.
+          Guarde-a: é com esses códigos que {the_learners} entram.
+      created:
+        title: "A conta foi criada"
+        body: >-
+          O Kalulu confirma a criação da conta.
+          {ui:CODES_AVAILABLE_IN_SETTINGS}
+
+  sign-in:
+    title: "Entrar na sua conta"
+    intro: >-
+      O acesso do adulto serve para recuperar a conta, neste dispositivo ou em
+      outro.
+    steps:
+      adult-sign-in:
+        title: "Informar suas credenciais"
+        body: >-
+          Na tela inicial, fique na aba de acesso, digite seu e-mail e sua senha
+          e toque em {ui:NEXT}.
+        note: >-
+          Esqueceu a senha? Use «{ui:RESET_PASSWORD}»: o Kalulu envia um link
+          para o seu e-mail.
+      pick-device:
+        title: "Escolher o dispositivo"
+        body: >-
+          Se sua conta abrange vários dispositivos, o Kalulu pergunta qual é
+          este. Cada dispositivo tem os seus próprios alunos.
+
+  student-sign-in:
+    title: "Acesso {learner}"
+    intro: >-
+      {the_learner} não tem e-mail nem senha: entra com um código de três
+      símbolos, que consegue reconhecer sem saber ler.
+    steps:
+      code-screen:
+        title: "A tela de acesso"
+        body: >-
+          Uma vez escolhido o dispositivo, o Kalulu mostra o teclado de
+          símbolos. No alto, a tela indica de qual dispositivo se trata.
+      enter-code:
+        title: "Digitar o código"
+        body: >-
+          {the_learner} toca nos seus três símbolos, na ordem. As caixas de cima
+          vão sendo preenchidas. O jogo começa assim que o código fica completo.
+      forgot-code:
+        title: "Código esquecido"
+        body: >-
+          Os códigos {of_learners} podem ser consultados a qualquer momento em
+          {ui:SETTINGS}, na linha «{ui:STUDENT_CODES}».
+
+  manage-students:
+    title: "Acessar as configurações"
+    intro: >-
+      Tudo o que diz respeito {of_learners} — adicionar, renomear, excluir —
+      acontece nas configurações, reservadas aos adultos.
+    steps:
+      open-settings:
+        title: "Abrir as configurações"
+        body: >-
+          Na tela de acesso {learner}, toque em {ui:SETTINGS}.
+      adult-check:
+        title: "Provar que você é um adulto"
+        body: >-
+          O Kalulu mostra uma pequena verificação para garantir que
+          {a_learner} não entre sozinho nas configurações. Siga a instrução
+          exibida.
+      student-list:
+        title: "A lista {of_learners}"
+        body: >-
+          As configurações mostram {the_learners} do dispositivo selecionado, cada
+          um com o seu código. As pastilhas de cima permitem passar de um
+          dispositivo para outro.
+
+  add-student:
+    title: "Adicionar {a_learner}"
+    steps:
+      add-button:
+        title: "Tocar no botão de adicionar"
+        body: >-
+          Nas configurações, toque no botão de adicionar
+          ({ui:SETTINGS_ADD_STUDENT}).
+      confirm-add:
+        title: "Confirmar"
+        body: >-
+          O Kalulu pede confirmação: «{ui:ADD_STUDENT_POPUP}». {the_learner} é
+          criado com um código novo, que você poderá renomear em seguida.
+      internet-needed:
+        title: "É necessária uma conexão com a internet"
+        body: >-
+          {ui:SETTINGS_INTERNET_MANDATORY_TO_ADD_STUDENT}. É o servidor que
+          garante que o código atribuído ainda não esteja em uso. Sem conexão, o
+          botão de adicionar não aparece.
+
+  rename-student:
+    title: "Renomear {a_learner}"
+    intro: >-
+      O nome {a_learner} pode ser alterado a qualquer momento, sem consequências
+      para o progresso nem para o código.
+    steps:
+      pick-student:
+        title: "Escolher {the_learner}"
+        body: >-
+          Na lista, toque em {the_learner} que você quer renomear.
+      edit-name:
+        title: "Alterar o nome"
+        body: >-
+          A ficha {of_the_learner} se abre. Toque no nome para editá-lo e confirme.
+      close-panel:
+        title: "Fechar a ficha"
+        body: >-
+          Feche a janela pelo xis no canto superior direito. O novo nome aparece
+          imediatamente na lista.
+
+  delete-student:
+    title: "Excluir {a_learner}"
+    intro: >-
+      A exclusão retira {the_learner} da conta e libera o seu código.
+    steps:
+      open-panel:
+        title: "Abrir a ficha e tocar na lixeira"
+        body: >-
+          Abra a ficha {of_the_learner} e toque no ícone de lixeira.
+      confirm-delete:
+        title: "Confirmar a exclusão"
+        body: >-
+          O Kalulu pede confirmação: «{ui:DELETE_STUDENT_POPUP}»
+      irreversible:
+        title: "É definitivo"
+        body: >-
+          O progresso {of_the_learner} é perdido e não pode ser recuperado, nem
+          mesmo a partir do servidor. Na dúvida, prefira renomear a ficha e
+          reaproveitá-la.
+
+  synchronise:
+    title: "Sincronização e folha de códigos"
+    steps:
+      why:
+        title: "Para que serve a sincronização"
+        body: >-
+          O Kalulu funciona sem conexão e envia os dados ao servidor assim que
+          houver internet. A sincronização manual serve para forçar esse envio,
+          por exemplo logo depois de renomear {a_learner}.
+        note: >-
+          Não é obrigatório: a atualização é enviada de qualquer forma no
+          próximo acesso {of_the_learner}.
+      sync-button:
+        title: "Sincronizar agora"
+        body: >-
+          Nas configurações, toque em {ui:SYNCHRONIZE_ACCOUNT}.
+      codes-sheet:
+        title: "Recuperar os códigos"
+        body: >-
+          «{ui:EXPORT_STUDENT_CODES}» salva novamente a folha de códigos a
+          qualquer momento. Útil para reimprimi-la, ou depois de adicionar
+          {a_learner}.

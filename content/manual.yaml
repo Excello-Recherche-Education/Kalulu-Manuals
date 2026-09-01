@@ -1,0 +1,134 @@
+# Structure of the Kalulu user manual. Language-neutral on purpose: the prose
+# for each id lives in content/strings/<locale>.yaml, so re-ordering a flow does
+# not touch four translations and fixing a sentence cannot move an arrow.
+#
+# `audiences` on a section or a step restricts it. The teacher and parent
+# manuals really do differ in the app -- a parent names each child during
+# registration, a teacher only says how many students a device has and renames
+# them afterwards -- and that difference is expressed here rather than by
+# keeping two documents in step by hand.
+
+version: 1
+app_version: "3.1.1"
+
+# The languages Kalulu's interface is translated into, which is what a manual
+# about using that interface has to follow. See README, "Languages".
+locales: [fr, es, pt_BR, it]
+audiences: [teacher, parent]
+
+sections:
+  - id: getting-started
+    steps:
+      - id: welcome
+        shot: welcome
+      - id: two-kinds-of-login
+
+  - id: create-account
+    steps:
+      - id: open-signup
+        shot: welcome
+        annotations:
+          - {type: ellipse, node: "%Toggle"}
+      - id: language
+        shot: register-language
+      - id: account-type
+        shot: register-account-type
+      - id: method
+        shot: register-method
+        audiences: [teacher]
+      - id: devices
+        shot: register-devices
+        audiences: [teacher]
+      - id: students-count
+        shot: register-students-count
+        audiences: [teacher]
+      - id: player
+        shot: register-player
+        audiences: [parent]
+      - id: credentials
+        shot: register-credentials
+      - id: conditions
+        shot: register-conditions
+      - id: recap
+        shot: register-recap
+      - id: created
+        shot: account-created
+
+  - id: sign-in
+    steps:
+      - id: adult-sign-in
+        shot: welcome
+      - id: pick-device
+        shot: device-selection
+        audiences: [teacher]
+
+  - id: student-sign-in
+    steps:
+      - id: code-screen
+        shot: student-login
+      - id: enter-code
+        shot: student-login
+        annotations:
+          - {type: rect, node: "%Slots"}
+      - id: forgot-code
+
+  - id: manage-students
+    steps:
+      - id: open-settings
+        shot: student-login
+        annotations:
+          - {type: ellipse, node: "Footer/TeacherButton"}
+          - {type: arrow, node: "Footer/TeacherButton"}
+      - id: adult-check
+        shot: adult-gate
+      - id: student-list
+        shot: settings
+        annotations:
+          - {type: rect, node: "%StudentsContainer"}
+
+  - id: add-student
+    steps:
+      - id: add-button
+        shot: settings
+        annotations:
+          - {type: ellipse, node: "%AddStudentButton"}
+      - id: confirm-add
+        shot: settings-add-student
+      - id: internet-needed
+
+  - id: rename-student
+    steps:
+      - id: pick-student
+        shot: settings
+        annotations:
+          - {type: rect, node: "%Panel1"}
+          - {type: arrow, node: "%Panel1"}
+      - id: edit-name
+        shot: student-details
+        annotations:
+          - {type: rect, node: "%NameLineEdit"}
+          - {type: arrow, node: "%NameLineEdit"}
+      - id: close-panel
+        shot: student-details
+        annotations:
+          - {type: ellipse, node: "%CloseButton"}
+
+  - id: delete-student
+    steps:
+      - id: open-panel
+        shot: student-details
+        annotations:
+          - {type: ellipse, node: "%DeleteButton"}
+      - id: confirm-delete
+        shot: settings-delete-student
+      - id: irreversible
+
+  - id: synchronise
+    steps:
+      - id: why
+      - id: sync-button
+        shot: settings
+        annotations:
+          - {type: ellipse, node: "%MenuButton"}
+      - id: codes-sheet
+        shot: settings

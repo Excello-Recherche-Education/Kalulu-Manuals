@@ -1,0 +1,16 @@
+# Reference material only — the hand-made manuals this generator replaces.
+# Never committed: it is scratch input, not a deliverable.
+old_manuals/
+
+# Derived output: screenshots rendered from the app, and the PDFs themselves.
+# Both are one command away from being regenerated, and both are large binaries
+# that would bloat the history for no gain.
+build/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+.DS_Store

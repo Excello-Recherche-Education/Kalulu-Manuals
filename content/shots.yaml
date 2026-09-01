@@ -1,0 +1,155 @@
+# How each screenshot in the manual is produced from the running app.
+#
+# Every key here is a screen the generator renders by launching Kalulu-Frontend,
+# switching it to the manual's language and photographing the real scene at the
+# project's 2560x1800 reference viewport. Nothing is captured by hand, so a
+# screen that changes in the app changes in every manual on the next build.
+#
+# recipe:
+#   scene           - load a scene and photograph it
+#   register_step   - a registration step, composed inside the real register
+#                     screen so it gets the background and its dropdowns filled
+#   student_details - the student popup, opened over the settings screen
+#
+# `after` runs small tweaks once the scene is alive: revealing a popup, filling
+# a field. Anything more elaborate belongs in a named recipe.
+
+# Reused by every shot that needs a populated account. Fixed names and codes,
+# never random: screenshots that reshuffle produce a meaningless diff.
+cast: &cast
+  - {device: 1, name: "Alice",   code: 123, age: 6}
+  - {device: 1, name: "Bob",     code: 214, age: 7}
+  - {device: 1, name: "Chloé",   code: 325, age: 6}
+  - {device: 2, name: "Doriane", code: 432, age: 7}
+
+shots:
+  welcome:
+    recipe: scene
+    args: {scene: "res://sources/menus/welcome/welcome.tscn"}
+
+  register-language:
+    recipe: scene
+    args: {scene: "res://sources/menus/register/register.tscn"}
+
+  register-account-type:
+    recipe: register_step
+    args: {scene: "res://sources/menus/register/steps/account_type_step.tscn"}
+
+  register-method:
+    recipe: register_step
+    args: {scene: "res://sources/menus/register/steps/teacher/method_step.tscn"}
+
+  register-devices:
+    recipe: register_step
+    args: {scene: "res://sources/menus/register/steps/teacher/devices_count_step.tscn"}
+
+  register-students-count:
+    recipe: register_step
+    args:
+      scene: "res://sources/menus/register/steps/teacher/students_count_step.tscn"
+      number: 1
+
+  register-player:
+    recipe: register_step
+    args:
+      scene: "res://sources/menus/register/steps/parent/player_step.tscn"
+      account_type: parent
+      number: 1
+
+  register-credentials:
+    recipe: register_step
+    args: {scene: "res://sources/menus/register/steps/credentials_step.tscn"}
+
+  register-conditions:
+    recipe: register_step
+    args: {scene: "res://sources/menus/register/steps/general_conditions_step.tscn"}
+
+  register-recap:
+    recipe: register_step
+    args:
+      scene: "res://sources/menus/register/steps/recap_step.tscn"
+      email: "marie.dupont@example.org"
+      students: *cast
+
+  account-created:
+    recipe: scene
+    args: {scene: "res://sources/menus/register/account_created.tscn"}
+
+  device-selection:
+    recipe: scene
+    args:
+      scene: "res://sources/menus/device_selection/device_selection.tscn"
+      seed_account: true
+      students: *cast
+
+  student-login:
+    recipe: scene
+    args:
+      scene: "res://sources/menus/login/login.tscn"
+      seed_account: true
+      students: *cast
+      # The mascot helper opens over this screen and its backdrop -- a 67%
+      # veil of near-black -- dims the whole capture. Hide it for the manual:
+      # the reader needs to see the keypad, not Kalulu explaining it.
+      after: &no_mascot
+        - {node: "%Kalulu", do: "hide"}
+
+  adult-gate:
+    recipe: scene
+    args:
+      scene: "res://sources/menus/login/login.tscn"
+      seed_account: true
+      students: *cast
+      after:
+        - {node: "%Kalulu", do: "hide"}
+        - {node: "%AdultCheck", do: "show"}
+
+  settings:
+    recipe: scene
+    args:
+      scene: "res://sources/menus/settings/teacher_settings.tscn"
+      seed_account: true
+      students: *cast
+      # The app hides these two behind a live internet check, so without this
+      # the screenshot depends on the network at capture time. The manual
+      # documents the connected case, so pin it.
+      after: &online
+        - {node: "%AddStudentButton", do: "show"}
+        - {node: "%AddDeviceButton", do: "show"}
+        - {node: "%LabelInternetMandatory", do: "hide"}
+        - {node: "%AccountTypeOptionButton", do: "select", value: 0}
+        - {node: "%EducationMethodOptionButton", do: "select", value: 0}
+
+  settings-add-student:
+    recipe: scene
+    args:
+      scene: "res://sources/menus/settings/teacher_settings.tscn"
+      seed_account: true
+      students: *cast
+      after:
+        - {node: "%AddStudentButton", do: "show"}
+        - {node: "%AddDeviceButton", do: "show"}
+        - {node: "%AccountTypeOptionButton", do: "select", value: 0}
+        - {node: "%EducationMethodOptionButton", do: "select", value: 0}
+        - {node: "%AddStudentPopup", do: "show"}
+
+  settings-delete-student:
+    recipe: scene
+    args:
+      scene: "res://sources/menus/settings/teacher_settings.tscn"
+      seed_account: true
+      students: *cast
+      after:
+        - {node: "%AddStudentButton", do: "show"}
+        - {node: "%AddDeviceButton", do: "show"}
+        - {node: "%AccountTypeOptionButton", do: "select", value: 0}
+        - {node: "%EducationMethodOptionButton", do: "select", value: 0}
+        - {node: "%DeleteStudentPopup", do: "show"}
+
+  student-details:
+    recipe: student_details
+    args:
+      seed_account: true
+      students: *cast
+      device: 1
+      code: 123
