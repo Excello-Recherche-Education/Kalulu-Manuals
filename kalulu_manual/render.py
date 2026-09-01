@@ -15,6 +15,7 @@ from PIL import Image
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
+from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.platypus import (
     BaseDocTemplate,
     Flowable,
@@ -72,7 +73,12 @@ def _styles() -> dict[str, ParagraphStyle]:
             "cover_meta", parent=body, fontSize=9.5, leading=14, textColor=theme.LAVENDER,
         ),
         "toc": ParagraphStyle(
-            "toc", parent=body, fontSize=11, leading=19, textColor=theme.NAVY,
+            "toc", parent=body, fontName=theme.BODY_BOLD, fontSize=11, leading=20,
+            textColor=theme.PURPLE,
+        ),
+        "toc_step": ParagraphStyle(
+            "toc_step", parent=body, fontSize=10, leading=16, textColor=theme.GREY_DARK,
+            leftIndent=8 * mm,
         ),
     }
 
@@ -118,6 +124,24 @@ class NoteBox(Flowable):
         self.paragraph.drawOn(self.canv, self.padding, self.padding)
 
 
+class Heading(Paragraph):
+    """A heading that also becomes a place the reader can jump to.
+
+    Carries the anchor name so `ManualDoc.afterFlowable` can, once the heading
+    has actually been laid out and its page is therefore known, register the
+    destination, add a sidebar bookmark, and -- for sections -- feed the
+    printed table of contents.
+    """
+
+    def __init__(self, text: str, style: ParagraphStyle, anchor: str, level: int = 0,
+                 in_contents: bool = True):
+        super().__init__(text, style)
+        self.anchor = anchor
+        self.level = level
+        self.in_contents = in_contents
+        self.plain = text
+
+
 class ManualDoc(BaseDocTemplate):
     """Two page templates: a full-bleed navy cover, then the body."""
 
@@ -145,6 +169,22 @@ class ManualDoc(BaseDocTemplate):
             PageTemplate(id="body", frames=[body_frame], onPage=self._footer),
         ])
 
+    def afterFlowable(self, flowable) -> None:
+        """Record where each heading landed, now that it has a page number."""
+        if not isinstance(flowable, Heading):
+            return
+        self.canv.bookmarkPage(flowable.anchor)
+        # The key must be a str. Handed bytes, ReportLab quietly uses the key
+        # itself as the visible title, so the sidebar fills with "sec-..."
+        # slugs and nothing errors.
+        self.canv.addOutlineEntry(
+            flowable.plain, flowable.anchor, level=flowable.level, closed=False
+        )
+        if flowable.in_contents:
+            # The fourth element is the anchor: TableOfContents turns the whole
+            # entry into a link to it, which is the clickable bit.
+            self.notify("TOCEntry", (flowable.level, flowable.plain, self.page, flowable.anchor))
+
     def _cover_background(self, canvas, _doc) -> None:
         canvas.saveState()
         canvas.setFillColor(theme.NAVY)
@@ -154,6 +194,9 @@ class ManualDoc(BaseDocTemplate):
         canvas.restoreState()
 
     def _footer(self, canvas, doc) -> None:
+        # Ask the reader to open with the bookmark pane showing; the manual is
+        # something people dip into rather than read front to back.
+        canvas.showOutline()
         canvas.saveState()
         canvas.setFont(theme.BODY, 8)
         canvas.setFillColor(theme.GREY)
@@ -222,21 +265,30 @@ def build_pdf(
     story.append(NextPageTemplate("body"))
     story.append(PageBreak())
     story.append(Paragraph(labels.get("contents", "Contents"), styles["section"]))
-    for index, section in enumerate(manual.sections, start=1):
-        story.append(Paragraph(f"{index}. {section.title}", styles["toc"]))
+    contents = TableOfContents()
+    contents.levelStyles = [styles["toc"], styles["toc_step"]]
+    # Dot leaders from the top level down, so every line runs to its page number.
+    contents.dotsMinLevel = 0
+    story.append(contents)
     story.append(PageBreak())
 
     # -- sections -------------------------------------------------------------
     for index, section in enumerate(manual.sections, start=1):
-        story.append(Paragraph(f"{index}. {section.title}", styles["section"]))
+        story.append(
+            Heading(f"{index}. {section.title}", styles["section"], f"sec-{section.id}")
+        )
         if section.intro:
             story.append(Paragraph(section.intro, styles["intro"]))
         for number, step in enumerate(section.steps, start=1):
-            story.extend(_step_flowables(step, number, manual, shots, styles, width))
+            story.extend(_step_flowables(step, number, manual, shots, styles, width, section.id))
         if index != len(manual.sections):
             story.append(PageBreak())
 
-    doc.build(story)
+    # Two passes: the first discovers which page each heading fell on, the
+    # second lays the contents out knowing them. Page numbers can shift between
+    # passes -- a longer contents page pushes everything down -- so ReportLab
+    # repeats until they stop moving.
+    doc.multiBuild(story)
     return out_path
 
 
@@ -247,11 +299,17 @@ def _step_flowables(
     shots: ShotLibrary,
     styles: dict[str, ParagraphStyle],
     width: float,
+    section_id: str = "",
 ) -> list:
     """One step, kept on a single page wherever it fits."""
     block: list = []
     if step.title:
-        block.append(Paragraph(f"{number}. {step.title}", styles["steptitle"]))
+        # In the reader's bookmark pane but not in the printed contents: 33
+        # steps would bury the nine sections a reader is actually navigating by.
+        block.append(
+            Heading(f"{number}. {step.title}", styles["steptitle"],
+                    f"step-{section_id}-{step.id}", level=1, in_contents=False)
+        )
         block.append(Paragraph(step.body, styles["body"]))
     else:
         block.append(Paragraph(f"<b>{number}.</b>&nbsp; {step.body}", styles["body"]))

@@ -22,6 +22,10 @@ Each covers creating an account, signing in, how a child signs in with a symbol
 code, and adding, renaming and deleting students — with an annotated screenshot
 of every screen involved.
 
+They are navigable, not just printable: the table of contents is clickable and
+carries page numbers, and every section and step is a bookmark in the reader's
+sidebar. Page numbers come from a two-pass build, so they are the real ones.
+
 ## Why generate them
 
 The manuals used to be Google Docs: a paragraph, a pasted screenshot, a red
