@@ -4,8 +4,8 @@ reviewed: true
 
 meta:
   title: "Manuel d'utilisation de Kalulu"
-  subtitle_teacher: "Guide de l'enseignant — créer un compte, gérer ses élèves"
-  subtitle_parent: "Guide du parent — créer un compte, gérer ses enfants"
+  subtitle_teacher: "Guide de l'enseignant — créer un compte, gérer {the_learners}"
+  subtitle_parent: "Guide du parent — créer un compte, gérer {the_learners}"
 
 labels:
   contents: "Sommaire"
@@ -16,23 +16,23 @@ labels:
 
 vocabulary:
   teacher:
-    the_learners: "les élèves"
-    of_learners: "des élèves"
-    of_the_learner: "de l'élève"
-    learner: "élève"
-    learners: "élèves"
-    a_learner: "un élève"
-    the_learner: "l'élève"
+    the_learners: "les étudiants"
+    of_learners: "des étudiants"
+    of_the_learner: "de l'étudiant"
+    learner: "étudiant"
+    learners: "étudiants"
+    a_learner: "un étudiant"
+    the_learner: "l'étudiant"
     adult: "l'enseignant"
     you_are: "enseignant"
   parent:
-    the_learners: "les enfants"
-    of_learners: "des enfants"
-    of_the_learner: "de l'enfant"
-    learner: "enfant"
-    learners: "enfants"
-    a_learner: "un enfant"
-    the_learner: "l'enfant"
+    the_learners: "les étudiants"
+    of_learners: "des étudiants"
+    of_the_learner: "de l'étudiant"
+    learner: "étudiant"
+    learners: "étudiants"
+    a_learner: "un étudiant"
+    the_learner: "l'étudiant"
     adult: "le parent"
     you_are: "parent"
 
@@ -40,7 +40,7 @@ sections:
   getting-started:
     title: "Prise en main"
     intro: >-
-      Kalulu apprend à lire aux enfants par la méthode du décodage. Ce manuel
+      Kalulu apprend à lire par la méthode du décodage. Ce manuel
       couvre tout ce qui se passe avant le jeu lui-même : créer le compte,
       s'y connecter, et gérer {the_learners}.
     steps:
@@ -92,20 +92,20 @@ sections:
       devices:
         title: "Indiquer le nombre d'appareils"
         body: >-
-          Précisez sur combien d'appareils vos élèves travailleront. Kalulu
-          répartira les élèves appareil par appareil.
+          Précisez sur combien d'appareils {the_learners} travailleront. Kalulu
+          les répartira appareil par appareil.
       students-count:
-        title: "Indiquer le nombre d'élèves par appareil"
+        title: "Indiquer le nombre d'{learners} par appareil"
         body: >-
-          Pour chaque appareil, indiquez combien d'élèves l'utiliseront. Kalulu
-          crée les élèves et leur attribue automatiquement un code d'accès.
+          Pour chaque appareil, indiquez combien d'{learners} l'utiliseront. Kalulu
+          les crée et leur attribue automatiquement un code d'accès.
         note: >-
-          Les élèves sont créés sans nom à cette étape. Vous les renommerez
+          {the_learners} sont créés sans nom à cette étape. Vous les renommerez
           ensuite dans {ui:SETTINGS} — voir « Renommer {a_learner} ».
       player:
-        title: "Renseigner chaque enfant"
+        title: "Renseigner chaque {learner}"
         body: >-
-          Saisissez le prénom et l'âge de chaque enfant. C'est ici que vous
+          Saisissez le prénom et l'âge de chaque {learner}. C'est ici que vous
           choisissez les identifiants qui s'afficheront dans l'application.
         note: >-
           En cas d'erreur, ou plus tard si besoin, ces informations restent
@@ -155,7 +155,7 @@ sections:
         title: "Choisir l'appareil"
         body: >-
           Si votre compte couvre plusieurs appareils, Kalulu demande lequel est
-          celui-ci. Chaque appareil a ses propres élèves.
+          celui-ci. Chaque appareil a ses propres {learners}.
 
   student-sign-in:
     title: "Connexion {learner}"
@@ -231,7 +231,9 @@ sections:
         title: "Quand le boss résiste"
         body: >-
           Après deux échecs de suite, le boss se bloque et le jeu réclame un
-          adulte : « {ui:ADULT_BOSS_BLOCK_PROMPT} »
+          adulte. L'écran demande de refaire le boss avec {the_learner} et de
+          lui faire prononcer les mots à voix haute, puis d'entrer les trois
+          symboles qu'il affiche pour débloquer l'application.
         note: >-
           Ce n'est pas une punition, c'est un signal : la lecture n'est pas
           encore acquise, et c'est le moment de refaire le passage avec

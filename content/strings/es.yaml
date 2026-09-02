@@ -5,8 +5,8 @@ reviewed: false
 
 meta:
   title: "Manual de uso de Kalulu"
-  subtitle_teacher: "Guía del docente — crear una cuenta, gestionar los estudiantes"
-  subtitle_parent: "Guía de la familia — crear una cuenta, gestionar los niños"
+  subtitle_teacher: "Guía del docente — crear una cuenta, gestionar {the_learners}"
+  subtitle_parent: "Guía de la familia — crear una cuenta, gestionar {the_learners}"
 
 labels:
   contents: "Índice"
@@ -27,13 +27,13 @@ vocabulary:
     adult: "el docente"
     you_are: "docente"
   parent:
-    the_learners: "los niños"
-    of_learners: "de los niños"
-    of_the_learner: "del niño"
-    learner: "niño"
-    learners: "niños"
-    a_learner: "un niño"
-    the_learner: "el niño"
+    the_learners: "los estudiantes"
+    of_learners: "de los estudiantes"
+    of_the_learner: "del estudiante"
+    learner: "estudiante"
+    learners: "estudiantes"
+    a_learner: "un estudiante"
+    the_learner: "el estudiante"
     adult: "la familia"
     you_are: "madre, padre o tutor"
 
@@ -93,20 +93,20 @@ sections:
       devices:
         title: "Indicar el número de dispositivos"
         body: >-
-          Indique en cuántos dispositivos trabajarán sus estudiantes. Kalulu
-          repartirá los estudiantes dispositivo por dispositivo.
+          Indique en cuántos dispositivos trabajarán {the_learners}. Kalulu los
+          repartirá dispositivo por dispositivo.
       students-count:
-        title: "Indicar el número de estudiantes por dispositivo"
+        title: "Indicar el número de {learners} por dispositivo"
         body: >-
-          Para cada dispositivo, indique cuántos estudiantes lo usarán. Kalulu
-          crea los estudiantes y les asigna automáticamente un código de acceso.
+          Para cada dispositivo, indique cuántos {learners} lo usarán. Kalulu los
+          crea y les asigna automáticamente un código de acceso.
         note: >-
-          En este paso los estudiantes se crean sin nombre. Los renombrará
+          En este paso {the_learners} se crean sin nombre. Los renombrará
           después en {ui:SETTINGS} — véase «Cambiar el nombre de {a_learner}».
       player:
-        title: "Rellenar los datos de cada niño"
+        title: "Rellenar los datos de cada {learner}"
         body: >-
-          Escriba el nombre y la edad de cada niño. Aquí es donde elige los
+          Escriba el nombre y la edad de cada {learner}. Aquí es donde elige los
           identificadores que aparecerán en la aplicación.
         note: >-
           Si se equivoca, o más adelante si hace falta, estos datos siguen
@@ -155,7 +155,7 @@ sections:
         title: "Elegir el dispositivo"
         body: >-
           Si su cuenta abarca varios dispositivos, Kalulu pregunta cuál es este.
-          Cada dispositivo tiene sus propios estudiantes.
+          Cada dispositivo tiene sus propios {learners}.
 
   student-sign-in:
     title: "Acceso {learner}"
@@ -231,7 +231,9 @@ sections:
         title: "Cuando el jefe se resiste"
         body: >-
           Tras dos fallos seguidos, el jefe se bloquea y el juego reclama a un
-          adulto: «{ui:ADULT_BOSS_BLOCK_PROMPT}»
+          adulto. La pantalla pide repetir el jefe con {the_learner} y hacerle
+          pronunciar las palabras en voz alta, y luego introducir los tres
+          símbolos que muestra para desbloquear la aplicación.
         note: >-
           No es un castigo, es una señal: la lectura todavía no está afianzada,
           y es el momento de rehacer ese paso con {the_learner}.

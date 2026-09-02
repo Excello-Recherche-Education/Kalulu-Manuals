@@ -26,6 +26,9 @@ from .uistrings import UIStrings
 #: ``{learner}`` and friends — audience vocabulary, substituted per document.
 VOCAB_REF = re.compile(r"\{([a-z_]+)\}")
 
+#: Anything left in braces once the app labels and the vocabulary are in.
+LEFTOVER_BRACE = re.compile(r"\{[^{}]*\}")
+
 
 class ContentError(Exception):
     """The content files are inconsistent. Always fatal: a manual that is
@@ -127,7 +130,19 @@ class ContentSet:
                 warnings.append(f"{where}: no {audience} vocabulary for {{{word}}} in {locale}")
                 return match.group(0)
 
-            return VOCAB_REF.sub(sub, resolved)
+            substituted = VOCAB_REF.sub(sub, resolved)
+            # Anything still in braces is a placeholder nobody filled. It comes
+            # from quoting an app string that carries its own runtime
+            # placeholders -- ADULT_BOSS_BLOCK_PROMPT holds {1} {2} {3}, which
+            # the game replaces with symbol names and the manual cannot -- and
+            # it reaches the page as literal braces.
+            leftover = LEFTOVER_BRACE.findall(substituted)
+            if leftover:
+                warnings.append(
+                    f"{where}: unfilled placeholder(s) {', '.join(sorted(set(leftover)))}"
+                    " -- quoting an app string that has runtime arguments?"
+                )
+            return substituted
 
         loc_sections = loc.get("sections") or {}
         sections: list[Section] = []
