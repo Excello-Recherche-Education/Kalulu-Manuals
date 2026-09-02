@@ -9,10 +9,13 @@
 # keeping two documents in step by hand.
 
 version: 1
-# Read from the sibling frontend's project.godot at build time. Hardcoded it
-# went stale immediately: the cover claimed 3.1.1 while the screenshots on the
-# pages were plainly stamped 3.1.2.
-app_version: auto
+# The **released** version this manual describes, which is deliberately behind
+# the one under development: development is internal, the manual goes outside.
+# So this is bumped at release, never to follow project.godot -- reading it
+# from the frontend would put an unreleased internal version on the cover of a
+# document handed to teachers. `kalulu-manual check` prints both so the gap
+# stays visible on purpose rather than by neglect.
+app_version: "3.1.2"
 
 # The languages Kalulu's interface is translated into, which is what a manual
 # about using that interface has to follow. See README, "Languages".

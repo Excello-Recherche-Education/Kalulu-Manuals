@@ -10,6 +10,7 @@ import yaml
 
 from .capture import (
     CaptureError, Shot, capture, find_frontend, find_godot, find_languages,
+    frontend_version,
 )
 from .content import ContentError, ContentSet
 from .render import build_pdf
@@ -151,11 +152,33 @@ def cmd_build(args: argparse.Namespace) -> int:
 
 def cmd_check(_args: argparse.Namespace) -> int:
     content = ContentSet.load(ROOT)
+    failures_ahead = False
     catalogue = _shot_catalogue()
     keys = sorted(set(content.shot_keys()))
     failures = 0
 
-    print("content")
+    documented = str(content.structure.get("app_version", "")) or "(unset)"
+    try:
+        current = frontend_version(find_frontend()) or "(unknown)"
+    except CaptureError:
+        current = "(no frontend found)"
+    print(f"version\n  manual documents {documented}, the frontend is at {current}")
+    if documented not in {"(unset)", ""} and current[0].isdigit():
+        doc_parts = tuple(int(n) for n in documented.split(".") if n.isdigit())
+        cur_parts = tuple(int(n) for n in current.split(".") if n.isdigit())
+        if doc_parts > cur_parts:
+            failures_ahead = True
+            print("  FAIL the manual documents a version the app has not reached")
+        elif doc_parts < cur_parts:
+            print("  the manual is behind, which is intended: development is"
+                  " internal, the manual is distributed")
+        else:
+            print("  the manual documents the version in development -- bump"
+                  " content/manual.yaml at release, not before")
+    else:
+        failures_ahead = False
+
+    print("\ncontent")
     for locale in content.locales:
         for audience in content.audiences:
             try:
@@ -186,7 +209,7 @@ def cmd_check(_args: argparse.Namespace) -> int:
         print(f"  {len(gaps)}/{len(keys)} keys have at least one gap; run `capture`")
     else:
         print(f"  all {len(keys)} keys captured in every locale")
-    return 1 if failures else 0
+    return 1 if (failures or failures_ahead) else 0
 
 
 def cmd_shots(_args: argparse.Namespace) -> int:
