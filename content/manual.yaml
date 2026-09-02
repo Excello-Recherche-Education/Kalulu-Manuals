@@ -9,7 +9,10 @@
 # keeping two documents in step by hand.
 
 version: 1
-app_version: "3.1.1"
+# Read from the sibling frontend's project.godot at build time. Hardcoded it
+# went stale immediately: the cover claimed 3.1.1 while the screenshots on the
+# pages were plainly stamped 3.1.2.
+app_version: auto
 
 # The languages Kalulu's interface is translated into, which is what a manual
 # about using that interface has to follow. See README, "Languages".

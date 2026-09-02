@@ -75,11 +75,23 @@ class ContentSet:
     @classmethod
     def load(cls, root: Path) -> "ContentSet":
         structure = _read_yaml(root / "content" / "manual.yaml")
+        if str(structure.get("app_version", "")).strip() in {"", "auto"}:
+            structure["app_version"] = cls._app_version() or ""
         ui = UIStrings.load(root / "content" / "ui_strings.csv")
         strings: dict[str, dict] = {}
         for locale in structure.get("locales", []):
             strings[locale] = _read_yaml(root / "content" / "strings" / f"{locale}.yaml")
         return cls(structure=structure, strings=strings, ui=ui, root=root)
+
+    @staticmethod
+    def _app_version() -> str | None:
+        """Ask the sibling frontend which version it is. Absent, the cover
+        simply omits the line rather than stating a number nobody checked."""
+        from .capture import CaptureError, find_frontend, frontend_version
+        try:
+            return frontend_version(find_frontend())
+        except CaptureError:
+            return None
 
     @property
     def locales(self) -> list[str]:

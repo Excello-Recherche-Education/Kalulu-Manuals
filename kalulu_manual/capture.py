@@ -59,6 +59,24 @@ def find_frontend(explicit: Path | None = None) -> Path:
     )
 
 
+def frontend_version(frontend: Path) -> str | None:
+    """The app's own `config/version`, read from its project.godot.
+
+    The manual's cover states which version of Kalulu it documents. Written by
+    hand it goes stale on every release and nobody notices, because a wrong
+    version number still builds and still looks right -- it said 3.1.1 while
+    the screenshots on the pages showed 3.1.2. Read from the app, it cannot
+    disagree with the screenshots, which come from that same checkout.
+    """
+    project = frontend / "project.godot"
+    if not project.is_file():
+        return None
+    for line in project.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith("config/version="):
+            return line.split("=", 1)[1].strip().strip('"')
+    return None
+
+
 def _kill_stragglers() -> None:
     """Make sure no Godot is left holding a window open.
 
