@@ -112,11 +112,6 @@ shots:
       scene: "res://sources/menus/login/login.tscn"
       seed_account: true
       students: *cast
-      # The mascot helper opens over this screen and its backdrop -- a 67%
-      # veil of near-black -- dims the whole capture. Hide it for the manual:
-      # the reader needs to see the keypad, not Kalulu explaining it.
-      after: &no_mascot
-        - {node: "%Kalulu", do: "hide"}
 
   adult-gate:
     recipe: scene
@@ -125,7 +120,6 @@ shots:
       seed_account: true
       students: *cast
       after:
-        - {node: "%Kalulu", do: "hide"}
         - {node: "%AdultCheck", do: "show"}
 
   settings:
@@ -185,13 +179,35 @@ shots:
     args:
       <<: *played
       scene: "res://sources/gardens/gardens.tscn"
+      # The first garden, and an account only three lessons in. The shared
+      # `played` progression sits at lesson ten, which is the *second* garden --
+      # so the illustration for "inside a garden" was showing the wrong one.
+      lessons_completed: 3
+      starting_garden: 0
 
+  # A lesson nobody has started: the film in the middle is what comes next,
+  # every minigame around it still locked. This is what "a lesson" looks like.
   lesson-wheel:
     recipe: garden_wheel
     args:
       <<: *played
       scene: "res://sources/gardens/gardens.tscn"
-      lesson_number: 10
+      lessons_completed: 3
+      in_progress_games: 0
+      starting_garden: 0
+      lesson_number: 4
+
+  # The same wheel further on: the film watched, the first minigame cleared,
+  # the second open. This is what the minigames step needs.
+  lesson-wheel-progress:
+    recipe: garden_wheel
+    args:
+      <<: *played
+      scene: "res://sources/gardens/gardens.tscn"
+      lessons_completed: 3
+      in_progress_games: 1
+      starting_garden: 0
+      lesson_number: 4
 
   look-and-learn:
     recipe: gameplay

@@ -21,8 +21,18 @@ const VIEWPORT_SIZE := Vector2i(2560, 1800)
 const SETTLE_FRAMES := 24
 ## How many times to re-read a viewport that came back as one flat colour.
 const GRAB_ATTEMPTS := 3
+## How many times to wait again for the minigame wheel to paint.
+const WHEEL_ATTEMPTS := 4
+## A single shot may not take longer than this. If one does, the harness writes
+## what it has and quits, rather than leaving a Godot window open forever with
+## nobody watching it. A scene that awaits something which never arrives -- an
+## audio "finished" that cannot fire, a curtain that never opens -- would
+## otherwise hang the whole run silently.
+const SHOT_TIMEOUT_SECONDS := 90.0
 
 var _results: Array = []
+var _watchdog: Timer
+var _out_paths: Dictionary = {}
 
 
 func _ready() -> void:
@@ -47,18 +57,67 @@ func _ready() -> void:
 	var out_dir: String = jobs.get("out_dir", "")
 	DirAccess.make_dir_recursive_absolute(out_dir)
 
+	_out_paths = {"result_path": jobs.get("result_path", "")}
+	_watchdog = Timer.new()
+	_watchdog.one_shot = true
+	_watchdog.wait_time = SHOT_TIMEOUT_SECONDS
+	_watchdog.timeout.connect(_on_watchdog)
+	add_child(_watchdog)
+
 	for shot: Dictionary in jobs.get("shots", []):
+		_watchdog.start(SHOT_TIMEOUT_SECONDS)
 		await _capture(shot, out_dir)
+		_watchdog.stop()
 
-	var result_path: String = jobs.get("result_path", "")
-	if not result_path.is_empty():
-		var handle := FileAccess.open(result_path, FileAccess.WRITE)
-		if handle:
-			handle.store_string(JSON.stringify({"results": _results}, "  "))
-			handle.close()
-
+	_write_results()
 	print("CAPTURE: done, %d shots" % _results.size())
 	get_tree().quit(0)
+
+
+## The scene of the helper Kalulu, the one who climbs out of a hole to explain
+## a screen. Behind him is a 67%-opaque near-black ColorRect covering the whole
+## view, which is exactly the part of a screenshot a manual cannot use.
+const KALULU_HELPER_SCENE: String = "res://sources/minigames/base/kalulu_ingame.tscn"
+
+
+## Hide every helper Kalulu in the tree.
+##
+## Matched on the instanced scene rather than the node name: the name "Kalulu"
+## is also worn by scenery -- the little one sitting on the brain map -- and by
+## the boss's own Kalulu, both of which belong in the picture. Only the helper
+## is an instance of this scene.
+##
+## Marking his speeches as already played (see `_silence_kalulu`) stops him
+## talking, but the gardens, the brain and every minigame still ship him
+## visible in the scene, so he has to be hidden as well as silenced.
+func _hide_helper_kalulu(root: Node) -> void:
+	var queue: Array[Node] = [root]
+	while not queue.is_empty():
+		var node: Node = queue.pop_back()
+		for child: Node in node.get_children():
+			queue.append(child)
+		if node.scene_file_path == KALULU_HELPER_SCENE and "visible" in node:
+			node.set("visible", false)
+
+
+## Give up on a shot that will not finish, and take the process down with it.
+##
+## Timers keep firing while a coroutine is stuck, because the tree goes on
+## processing frames, so this fires even when nothing else can make progress.
+func _on_watchdog() -> void:
+	push_error("CAPTURE: a shot exceeded %ds; quitting" % int(SHOT_TIMEOUT_SECONDS))
+	_write_results()
+	get_tree().quit(4)
+
+
+func _write_results() -> void:
+	var result_path: String = _out_paths.get("result_path", "")
+	if result_path.is_empty():
+		return
+	var handle := FileAccess.open(result_path, FileAccess.WRITE)
+	if handle:
+		handle.store_string(JSON.stringify({"results": _results}, "  "))
+		handle.close()
 
 
 func _read_json(path: String) -> Dictionary:
@@ -97,7 +156,7 @@ func _capture(shot: Dictionary, out_dir: String) -> void:
 		"gameplay":
 			root = _gameplay(args)
 		"garden_wheel":
-			root = await _garden_wheel(args)
+			root = _gameplay(args)
 		_:
 			error = "unknown recipe %s" % recipe
 
@@ -118,6 +177,13 @@ func _capture(shot: Dictionary, out_dir: String) -> void:
 
 	for _i in SETTLE_FRAMES:
 		await get_tree().process_frame
+
+	# Kalulu's explanation apparatus, everywhere it appears.
+	if not bool(args.get("keep_kalulu", false)):
+		_hide_helper_kalulu(root)
+
+	if recipe == "garden_wheel":
+		await _open_wheel(root, viewport, int(args.get("lesson_number", 1)))
 
 	# Late tweaks need the scene's @onready vars, so they run after the first frames.
 	if args.has("after"):
@@ -176,6 +242,22 @@ func _grab(viewport: SubViewport) -> Image:
 	return image
 
 
+## True when two frames differ over more than a twentieth of the picture.
+## Sampled small: this only has to tell "the wheel is up" from "nothing
+## happened", not measure anything.
+func _differs(before: Image, after: Image) -> bool:
+	var a := before.duplicate() as Image
+	var b := after.duplicate() as Image
+	a.resize(48, 34, Image.INTERPOLATE_NEAREST)
+	b.resize(48, 34, Image.INTERPOLATE_NEAREST)
+	var changed: int = 0
+	for y: int in a.get_height():
+		for x: int in a.get_width():
+			if not a.get_pixel(x, y).is_equal_approx(b.get_pixel(x, y)):
+				changed += 1
+	return changed > (a.get_width() * a.get_height()) / 20
+
+
 ## True when every pixel is the same colour, which no real screen ever is.
 ## Sampled on a shrunk copy: exact, and far cheaper than four megapixels.
 func _is_flat(image: Image) -> bool:
@@ -213,6 +295,7 @@ func _gameplay(args: Dictionary) -> Node:
 		return null
 
 	UserDataManager.student = args.get("student_name", "Alice")
+	_silence_kalulu()
 	var progression := StudentProgression.new()
 	progression.init_unlocks()
 	# Play the account forward far enough that the screen has something to
@@ -260,46 +343,71 @@ func _gameplay(args: Dictionary) -> Node:
 	return scene
 
 
-## The minigame wheel: what a lesson actually is, in one picture -- the
-## Look-and-Learn film in the middle, its minigames as wedges around it.
+## Every speech Kalulu offers to give, marked as already given.
 ##
-## It is not a scene of its own. The gardens screen builds it in place when a
-## child taps a lesson, so the only way to photograph it is to build the
-## gardens, find the lesson button, and open it exactly as that tap would.
+## On a first visit Kalulu climbs out of his hole to explain the screen, and
+## while he talks the whole view sits under a purple veil with his burrow in the
+## corner. That is right for a child and wrong for a manual: it dims the very
+## thing each screenshot is meant to show. The game already suppresses the
+## explanation once a child has heard it, so the harness simply says they have.
+##
+## The names are the ones the code gates on: the two screens, plus one per
+## minigame from Minigame.TYPE_NAMES.
+const KALULU_SPEECHES: Array[String] = [
+	"gardens", "brain",
+	"jellyfish", "crabs", "parakeets", "monkey", "caterpillar",
+	"frog", "turtles", "ants", "penguin", "boss",
+]
+
+
+func _silence_kalulu() -> void:
+	var speeches := UserSpeeches.new()
+	for name: String in KALULU_SPEECHES:
+		speeches.add_speech(name)
+	UserDataManager.set("_student_speeches", speeches)
+
+
+## Open the minigame wheel on the viewport the screenshot is taken from.
+##
+## The wheel is not a scene: the gardens screen builds it in place when a child
+## taps a lesson. It was first opened while the gardens sat in a staging
+## viewport and then re-parented -- which re-runs `_enter_tree`, rebuilds the
+## gardens, and throws the wheel away again. Intermittently: sometimes the
+## rebuild lost it, sometimes it did not, and the failure looks like a perfectly
+## good screenshot of the garden. So it is opened here, after mounting, and
+## never moved afterwards.
 ##
 ## Lesson buttons carry no lesson number: lessons are numbered by walking every
 ## garden's buttons in order, so the number is recovered the same way, from how
 ## many lessons the gardens before this one hold.
-func _garden_wheel(args: Dictionary) -> Node:
-	var gardens: Node = _gameplay(args)
-	if gardens == null:
-		return null
-	var staging := _stage(gardens)
-	await _settle()
-
+func _open_wheel(gardens: Node, viewport: SubViewport, lesson: int) -> void:
 	var garden: Object = gardens.get("current_garden")
 	if garden == null:
-		_unstage(staging, gardens)
-		return gardens
+		push_warning("CAPTURE: no current garden, cannot open the wheel")
+		return
 	var buttons: Array = garden.call("get_lesson_buttons")
-	# Lessons are numbered by walking every garden's buttons in order, so the
-	# number of the first button here is however many lessons the gardens
-	# before it hold.
+	if buttons.is_empty():
+		push_warning("CAPTURE: garden has no lesson buttons")
+		return
+
 	var first: int = 1
 	var distribution: Variant = gardens.get("lesson_distribution")
 	if distribution is Array:
 		for before: int in range(int(garden.get("garden_index"))):
 			first += int((distribution as Array)[before])
-	var lesson: int = int(args.get("lesson_number", first))
 	var index: int = clampi(lesson - first, 0, buttons.size() - 1)
-	gardens.call("_open_minigames_layout", buttons[index], first + index)
 
-	# The wheel fades in over a quarter of a second. Sixteen frames is just
-	# under that, which caught three manuals out of four mid-fade -- and a
-	# half-faded wheel is not blank, so nothing flagged it.
-	await _settle(60)
-	_unstage(staging, gardens)
-	return gardens
+	# What the screen looked like before the tap, to prove the wheel arrived. A
+	# wheel that fails to paint leaves the garden on screen, which the
+	# blank-frame check cannot see -- it is not blank, just wrong.
+	var before: Image = viewport.get_texture().get_image()
+	gardens.call("_open_minigames_layout", buttons[index], first + index)
+	for attempt: int in WHEEL_ATTEMPTS:
+		await _settle(60)
+		if _differs(before, viewport.get_texture().get_image()):
+			return
+		push_warning("CAPTURE: wheel has not painted yet (attempt %d)" % (attempt + 1))
+	push_warning("CAPTURE: wheel never painted for lesson %d" % lesson)
 
 
 func _instantiate(scene_path: String) -> Node:
@@ -409,9 +517,7 @@ func _register_step(args: Dictionary) -> Node:
 	return screen
 
 
-## Builds a scene in a throwaway viewport so its `_ready` runs before the
-## harness pokes at it. The caller re-parents the result into the viewport it
-## actually photographs.
+
 func _stage(node: Node) -> SubViewport:
 	var viewport := SubViewport.new()
 	viewport.size = VIEWPORT_SIZE

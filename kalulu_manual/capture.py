@@ -59,6 +59,18 @@ def find_frontend(explicit: Path | None = None) -> Path:
     )
 
 
+def _kill_stragglers() -> None:
+    """Make sure no Godot is left holding a window open.
+
+    subprocess kills the process it started, but a Godot that was already
+    wedged -- or one from an earlier interrupted run -- stays on screen waiting
+    for somebody to close it. Nothing else on this machine runs the harness
+    scene, so matching on it is safe.
+    """
+    subprocess.run(["pkill", "-f", f"{HARNESS_DIR}/capture.tscn"],
+                   capture_output=True, check=False)
+
+
 def find_languages(explicit: Path | None = None) -> Path | None:
     """Locate Kalulu-Languages, the sibling holding the content packs."""
     here = Path(__file__).resolve().parent.parent
@@ -89,6 +101,31 @@ def find_godot(explicit: str | None = None) -> str:
     raise CaptureError(
         "no Godot binary found. Set $GODOT (Kalulu-Main's scripts/kalulu-env.sh does)."
     )
+
+
+def _check_harness_compiles(frontend: Path, godot: str) -> None:
+    """Parse the harness before running it.
+
+    A GDScript parse error is the worst failure mode here: Godot loads no main
+    scene, opens an empty window and sits in it. Nothing times out inside the
+    game, nothing is written, and the only symptom is a window someone has to
+    close by hand. `--check-only` catches it in about a second, headless.
+    """
+    probe = subprocess.run(
+        [godot, "--headless", "--path", str(frontend), "--check-only",
+         "--script", f"res://{HARNESS_DIR}/capture.gd"],
+        capture_output=True, text=True, timeout=120,
+    )
+    output = probe.stdout + probe.stderr
+    # Only parse errors. `--check-only` resolves no autoloads, so it always
+    # reports `Identifier not found: Database` and friends -- which is exactly
+    # why the harness runs as a scene rather than through --script. Those are
+    # expected; a parse error is not, and is the one that leaves a dead window.
+    errors = [line for line in output.splitlines() if "Parse Error" in line]
+    if errors:
+        raise CaptureError(
+            "the capture harness does not compile:\n  " + "\n  ".join(errors[:8])
+        )
 
 
 @dataclass
@@ -216,6 +253,8 @@ def _capture_batch(
     }
     jobs_path.write_text(json.dumps(jobs, indent=2), encoding="utf-8")
 
+    _check_harness_compiles(frontend, godot)
+
     env = {**os.environ, "KALULU_MANUAL_JOBS": str(jobs_path.resolve())}
     command = [
         godot,
@@ -223,12 +262,19 @@ def _capture_batch(
         str(frontend),
         f"res://{HARNESS_DIR}/capture.tscn",
     ]
+    # The harness has its own per-shot watchdog; this is the backstop for the
+    # cases it cannot see, such as Godot never getting as far as running it.
+    budget = min(timeout, 60 + 60 * len(shots))
     try:
         proc = subprocess.run(
-            command, env=env, capture_output=True, text=True, timeout=timeout
+            command, env=env, capture_output=True, text=True, timeout=budget,
+            start_new_session=True,
         )
     except subprocess.TimeoutExpired as exc:
-        raise CaptureError(f"Godot did not finish within {timeout}s") from exc
+        _kill_stragglers()
+        raise CaptureError(
+            f"Godot did not finish within {budget}s for {len(shots)} shot(s); killed it"
+        ) from exc
     finally:
         shutil.rmtree(harness_dst, ignore_errors=True)
 

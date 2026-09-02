@@ -76,8 +76,10 @@ sections:
   # wants to know what the child is about to do, not how to rename them.
   - id: how-to-play
     steps:
+      # No screenshot on purpose: the brain map is the whole journey at once
+      # and reading it before you have seen a single garden is disorienting.
+      # It gets its own step further down.
       - id: gardens-chain
-        shot: brain
       - id: one-garden
         shot: garden
       - id: what-is-a-lesson
@@ -85,7 +87,7 @@ sections:
       - id: look-and-learn
         shot: look-and-learn
       - id: minigames
-        shot: lesson-wheel
+        shot: lesson-wheel-progress
       - id: boss
         shot: boss
       - id: boss-blocks
