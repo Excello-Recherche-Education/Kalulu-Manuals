@@ -24,7 +24,12 @@ from .model import Annotation, Manual, Section, Step
 from .uistrings import UIStrings
 
 #: ``{learner}`` and friends — audience vocabulary, substituted per document.
-VOCAB_REF = re.compile(r"\{([a-z_]+)\}")
+#: A leading caret asks for the first letter capitalised: ``{^adult}`` opens a
+#: sentence, ``{adult}`` sits inside one. Without it every sentence starting on
+#: a vocabulary word came out lowercase — "l'enseignant se connecte", "el
+#: docente entra" — in all four languages at once, which is exactly how a
+#: machine-translated document reads.
+VOCAB_REF = re.compile(r"\{(\^?)([a-z_]+)\}")
 
 #: Anything left in braces once the app labels and the vocabulary are in.
 LEFTOVER_BRACE = re.compile(r"\{[^{}]*\}")
@@ -124,9 +129,10 @@ class ContentSet:
                 warnings.append(f"{where}: {problem}")
 
             def sub(match: re.Match[str]) -> str:
-                word = match.group(1)
+                caret, word = match.group(1), match.group(2)
                 if word in vocab:
-                    return str(vocab[word])
+                    value = str(vocab[word])
+                    return value[:1].upper() + value[1:] if caret else value
                 warnings.append(f"{where}: no {audience} vocabulary for {{{word}}} in {locale}")
                 return match.group(0)
 

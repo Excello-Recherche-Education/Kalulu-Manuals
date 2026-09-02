@@ -1,11 +1,18 @@
 locale: pt_BR
-# Translated from fr.yaml. Not yet reviewed by a native speaker.
+# Translated from fr.yaml, then read through end to end against it and
+# corrected: article contractions, sentence-initial capitals, noun-noun
+# compounds that do not work in this language, and phrasing that read as a
+# literal rendering rather than as something written in it.
+#
+# Still awaiting a native speaker, which is what `reviewed` claims -- so it
+# stays false and the cover keeps its draft banner. Set it to true once someone
+# who speaks this language has read the built PDF.
 reviewed: false
 
 meta:
   title: "Manual de uso do Kalulu"
-  subtitle_teacher: "Guia do professor — criar uma conta, gerenciar {the_learners}"
-  subtitle_parent: "Guia da família — criar uma conta, gerenciar {the_learners}"
+  subtitle_teacher: "Guia do professor — criar uma conta, gerenciar os estudantes"
+  subtitle_parent: "Guia da família — criar uma conta, gerenciar os estudantes"
 
 labels:
   contents: "Sumário"
@@ -16,23 +23,9 @@ labels:
 
 vocabulary:
   teacher:
-    the_learners: "os estudantes"
-    of_learners: "dos estudantes"
-    of_the_learner: "do estudante"
-    learner: "estudante"
-    learners: "estudantes"
-    a_learner: "um estudante"
-    the_learner: "o estudante"
     adult: "o professor"
     you_are: "professor"
   parent:
-    the_learners: "os estudantes"
-    of_learners: "dos estudantes"
-    of_the_learner: "do estudante"
-    learner: "estudante"
-    learners: "estudantes"
-    a_learner: "um estudante"
-    the_learner: "o estudante"
     adult: "a família"
     you_are: "mãe, pai ou responsável"
 
@@ -42,7 +35,7 @@ sections:
     intro: >-
       O Kalulu ensina a ler pelo método da decodificação. Este manual cobre tudo
       o que acontece antes do jogo: criar a conta, entrar nela e gerenciar
-      {the_learners}.
+      os estudantes.
     steps:
       welcome:
         title: "A tela inicial"
@@ -51,15 +44,15 @@ sections:
           partida tanto para entrar em uma conta existente quanto para criar uma
           nova.
       two-kinds-of-login:
-        title: "Dois acessos que não devem ser confundidos"
+        title: "Dois acessos que não se devem confundir"
         body: >-
           O Kalulu distingue o acesso <b>do adulto</b> do acesso
-          <b>{learner}</b>. {adult} entra com um e-mail e uma senha, para
-          gerenciar a conta. {the_learner} entra com um código de três símbolos,
+          <b>do estudante</b>. {^adult} entra com um e-mail e uma senha, para
+          gerenciar a conta. O estudante entra com um código de três símbolos,
           sem teclado nem senha.
         note: >-
           As configurações da conta são reservadas aos adultos. O Kalulu pede
-          uma pequena verificação antes de deixar entrar.
+          uma pequena verificação antes de dar acesso.
 
   create-account:
     title: "Criar uma conta"
@@ -74,7 +67,7 @@ sections:
       language:
         title: "Escolher o idioma"
         body: >-
-          Selecione o idioma no qual {the_learners} vão aprender a ler e toque em
+          Selecione o idioma no qual os estudantes vão aprender a ler e toque em
           {ui:NEXT}.
         note: >-
           É o idioma do conteúdo pedagógico e determina as lições baixadas. Ele
@@ -82,8 +75,8 @@ sections:
       account-type:
         title: "Indicar o tipo de conta"
         body: >-
-          Escolha «{ui:TEACHER}» ou «{ui:PARENT}». Você é {you_are}: essa
-          escolha decide as perguntas seguintes.
+          Escolha «{ui:TEACHER}» ou «{ui:PARENT}». Você é {you_are}: as perguntas
+          seguintes dependem dessa escolha.
       method:
         title: "Escolher o método de ensino"
         body: >-
@@ -92,24 +85,23 @@ sections:
       devices:
         title: "Indicar o número de dispositivos"
         body: >-
-          Informe em quantos dispositivos {the_learners} vão trabalhar. O Kalulu
-          os distribuirá dispositivo por dispositivo.
+          Informe em quantos dispositivos os estudantes vão trabalhar. O Kalulu os distribuirá entre os dispositivos.
       students-count:
-        title: "Indicar o número de {learners} por dispositivo"
+        title: "Indicar o número de estudantes por dispositivo"
         body: >-
-          Para cada dispositivo, informe quantos {learners} vão usá-lo. O Kalulu os
+          Para cada dispositivo, informe quantos estudantes vão usá-lo. O Kalulu os
           cria e atribui automaticamente um código de acesso a cada um.
         note: >-
-          Nesta etapa {the_learners} são criados sem nome. Você os renomeará depois
-          em {ui:SETTINGS} — veja «Renomear {a_learner}».
+          Nesta etapa os estudantes são criados sem nome. Você os renomeará depois
+          em {ui:SETTINGS} — veja «Renomear um estudante».
       player:
-        title: "Preencher os dados de cada {learner}"
+        title: "Preencher os dados de cada estudante"
         body: >-
-          Digite o nome e a idade de cada {learner}. É aqui que você escolhe os
+          Digite o nome e a idade de cada estudante. É aqui que você escolhe os
           identificadores que aparecerão no aplicativo.
         note: >-
           Em caso de erro, ou mais tarde se necessário, esses dados continuam
-          editáveis — veja «Renomear {a_learner}».
+          editáveis — veja «Renomear um estudante».
       credentials:
         title: "Informar suas credenciais"
         body: >-
@@ -124,10 +116,10 @@ sections:
         title: "Conferir o resumo"
         body: >-
           A última tela resume a conta: e-mail, tipo de conta, número de
-          dispositivos e {the_learners} com o respectivo código. Confira e confirme.
+          dispositivos e os estudantes com o respectivo código. Confira e confirme.
         note: >-
           O botão «{ui:SAVE_ALL_CODES}» salva a folha de códigos em um arquivo.
-          Guarde-a: é com esses códigos que {the_learners} entram.
+          Guarde-a: é com esses códigos que os estudantes entram.
       created:
         title: "A conta foi criada"
         body: >-
@@ -151,13 +143,12 @@ sections:
       pick-device:
         title: "Escolher o dispositivo"
         body: >-
-          Se sua conta abrange vários dispositivos, o Kalulu pergunta qual é
-          este. Cada dispositivo tem os seus próprios {learners}.
+          Se sua conta abrange vários dispositivos, o Kalulu pergunta em qual você está. Cada dispositivo tem os seus próprios estudantes.
 
   student-sign-in:
-    title: "Acesso {learner}"
+    title: "Acesso estudante"
     intro: >-
-      {the_learner} não tem e-mail nem senha: entra com um código de três
+      O estudante não tem e-mail nem senha: entra com um código de três
       símbolos, que consegue reconhecer sem saber ler.
     steps:
       code-screen:
@@ -168,23 +159,23 @@ sections:
       enter-code:
         title: "Digitar o código"
         body: >-
-          {the_learner} toca nos seus três símbolos, na ordem. As caixas de cima
+          O estudante toca nos seus três símbolos, na ordem. As caixas de cima
           vão sendo preenchidas. O jogo começa assim que o código fica completo.
       forgot-code:
         title: "Código esquecido"
         body: >-
-          Os códigos {of_learners} podem ser consultados a qualquer momento em
+          Os códigos dos estudantes podem ser consultados a qualquer momento em
           {ui:SETTINGS}, na linha «{ui:STUDENT_CODES}».
 
   how-to-play:
     title: "Como se joga"
     intro: >-
       O Kalulu se apresenta como uma viagem: doze jardins encadeados, uma lição
-      depois da outra. Esta parte descreve o que {the_learner} vê e faz. Aqui
+      depois da outra. Esta parte descreve o que o estudante vê e faz. Aqui
       não há nada para configurar.
     steps:
       gardens-chain:
-        title: "Doze jardins, uma só corrente"
+        title: "Doze jardins, uma só sequência"
         body: >-
           O percurso inteiro cabe em doze jardins, ligados numa ordem fixa.
           Avança-se sempre no mesmo sentido: um jardim se abre quando o anterior
@@ -198,7 +189,7 @@ sections:
           seguinte.
         note: >-
           O jardim floresce aos poucos: as plantas e os animais aparecem à
-          medida que {the_learner} termina as lições.
+          medida que o estudante termina as lições.
       what-is-a-lesson:
         title: "O que é uma lição"
         body: >-
@@ -226,49 +217,47 @@ sections:
         title: "Quando o chefe resiste"
         body: >-
           Depois de duas falhas seguidas, o chefe se bloqueia e o jogo pede um
-          adulto. A tela pede para repetir o chefe com {the_learner} e fazê-lo
+          adulto. A tela pede para repetir o chefe com o estudante e fazê-lo
           pronunciar as palavras em voz alta, e depois inserir os três símbolos
           que ela mostra para desbloquear o aplicativo.
         note: >-
           Não é um castigo, é um sinal: a leitura ainda não está firme, e é a
-          hora de refazer essa etapa com {the_learner}.
+          hora de refazer essa etapa com o estudante.
       brain-screen:
         title: "A tela do cérebro"
         body: >-
-          O cérebro mostra a viagem inteira: os doze jardins de relance, os
-          chefes entre eles e o progresso do jogador. É ali que se vê o caminho
+          O cérebro mostra a viagem inteira: os doze jardins num relance, os chefes que os separam e o progresso do jogador. É ali que se vê o caminho
           percorrido e o que falta.
       final-boss:
         title: "O último chefe"
         body: >-
           No fim do último jardim espera um chefe final. Vencê-lo desbloqueia
-          algo na tela do cérebro: não descrevemos aqui, é uma surpresa para
-          descobrir com {the_learner}.
+          algo na tela do cérebro: não o descrevemos aqui, é uma surpresa para descobrir junto com o estudante.
   manage-students:
     title: "Acessar as configurações"
     intro: >-
-      Tudo o que diz respeito {of_learners} — adicionar, renomear, excluir —
+      Tudo o que diz respeito aos estudantes — adicionar, renomear, excluir —
       acontece nas configurações, reservadas aos adultos.
     steps:
       open-settings:
         title: "Abrir as configurações"
         body: >-
-          Na tela de acesso {learner}, toque em {ui:SETTINGS}.
+          Na tela de acesso do estudante, toque em {ui:SETTINGS}.
       adult-check:
         title: "Provar que você é um adulto"
         body: >-
           O Kalulu mostra uma pequena verificação para garantir que
-          {a_learner} não entre sozinho nas configurações. Siga a instrução
+          um estudante não entre sozinho nas configurações. Siga a instrução
           exibida.
       student-list:
-        title: "A lista {of_learners}"
+        title: "A lista dos estudantes"
         body: >-
-          As configurações mostram {the_learners} do dispositivo selecionado, cada
+          As configurações mostram os estudantes do dispositivo selecionado, cada
           um com o seu código. As pastilhas de cima permitem passar de um
           dispositivo para outro.
 
   add-student:
-    title: "Adicionar {a_learner}"
+    title: "Adicionar um estudante"
     steps:
       add-button:
         title: "Tocar no botão de adicionar"
@@ -278,7 +267,7 @@ sections:
       confirm-add:
         title: "Confirmar"
         body: >-
-          O Kalulu pede confirmação: «{ui:ADD_STUDENT_POPUP}». {the_learner} é
+          O Kalulu pede confirmação: «{ui:ADD_STUDENT_POPUP}». O estudante é
           criado com um código novo, que você poderá renomear em seguida.
       internet-needed:
         title: "É necessária uma conexão com a internet"
@@ -288,19 +277,19 @@ sections:
           botão de adicionar não aparece.
 
   rename-student:
-    title: "Renomear {a_learner}"
+    title: "Renomear um estudante"
     intro: >-
-      O nome {a_learner} pode ser alterado a qualquer momento, sem consequências
+      O nome de um estudante pode ser alterado a qualquer momento, sem consequências
       para o progresso nem para o código.
     steps:
       pick-student:
-        title: "Escolher {the_learner}"
+        title: "Escolher o estudante"
         body: >-
-          Na lista, toque em {the_learner} que você quer renomear.
+          Na lista, toque no estudante que você quer renomear.
       edit-name:
         title: "Alterar o nome"
         body: >-
-          A ficha {of_the_learner} se abre. Toque no nome para editá-lo e confirme.
+          A ficha do estudante se abre. Toque no nome para editá-lo e confirme.
       close-panel:
         title: "Fechar a ficha"
         body: >-
@@ -308,14 +297,14 @@ sections:
           imediatamente na lista.
 
   delete-student:
-    title: "Excluir {a_learner}"
+    title: "Excluir um estudante"
     intro: >-
-      A exclusão retira {the_learner} da conta e libera o seu código.
+      A exclusão retira o estudante da conta e libera o seu código.
     steps:
       open-panel:
         title: "Abrir a ficha e tocar na lixeira"
         body: >-
-          Abra a ficha {of_the_learner} e toque no ícone de lixeira.
+          Abra a ficha do estudante e toque no ícone de lixeira.
       confirm-delete:
         title: "Confirmar a exclusão"
         body: >-
@@ -323,7 +312,7 @@ sections:
       irreversible:
         title: "É definitivo"
         body: >-
-          O progresso {of_the_learner} é perdido e não pode ser recuperado, nem
+          O progresso do estudante é perdido e não pode ser recuperado, nem
           mesmo a partir do servidor. Na dúvida, prefira renomear a ficha e
           reaproveitá-la.
 
@@ -335,10 +324,10 @@ sections:
         body: >-
           O Kalulu funciona sem conexão e envia os dados ao servidor assim que
           houver internet. A sincronização manual serve para forçar esse envio,
-          por exemplo logo depois de renomear {a_learner}.
+          por exemplo logo depois de renomear um estudante.
         note: >-
           Não é obrigatório: a atualização é enviada de qualquer forma no
-          próximo acesso {of_the_learner}.
+          próximo acesso do estudante.
       sync-button:
         title: "Sincronizar agora"
         body: >-
@@ -350,4 +339,4 @@ sections:
           O ícone de exportação, cuja dica de tela indica
           «{ui:EXPORT_STUDENT_CODES}», salva novamente a folha de códigos a
           qualquer momento. Útil para reimprimi-la, ou depois de adicionar
-          {a_learner}.
+          um estudante.
