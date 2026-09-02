@@ -193,6 +193,15 @@ func _capture(shot: Dictionary, out_dir: String) -> void:
 		for _i in int(args.get("after_frames", 8)):
 			await get_tree().process_frame
 
+	# Again, right before the shutter. Hiding him once after the scene settles
+	# is not enough: on the child login screen he is revealed by an await that
+	# lands later than that, so the early hide gets undone and the veil is back
+	# by the time the frame is taken. Whatever the scene did in between, he is
+	# hidden here, and the frames below let that reach the screen.
+	if not bool(args.get("keep_kalulu", false)):
+		_hide_helper_kalulu(root)
+		await _settle(4)
+
 	var image := await _grab(viewport)
 	var crop: Variant = args.get("crop", null)
 	if crop is Array and (crop as Array).size() == 4:
