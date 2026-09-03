@@ -57,6 +57,15 @@ sections:
         shot: register-conditions
       - id: recap
         shot: register-recap
+        annotations:
+          # The two buttons the note is about: the one that must be pressed,
+          # and the one that stays dead until it has been. %SaveAllCodesButton
+          # is unique; Confirm is reached by path because the scene never
+          # marked it, and the capture records both.
+          # Rounded rectangles, not ellipses: an ellipse inscribed in a wide
+          # button clips its corners and cuts through the label.
+          - {type: rect, node: "%SaveAllCodesButton"}
+          - {type: rect, node: "Steps/RecapStep/RightMargin/RightContainer/ValidateButton"}
       - id: created
         shot: account-created
 
