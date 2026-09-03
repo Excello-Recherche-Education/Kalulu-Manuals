@@ -12,11 +12,18 @@ educational app that helps children learn to read through the decoding
 
 ```
 build/manuals/
-├── Kalulu-Manual_teacher_fr.pdf     Kalulu-Manual_parent_fr.pdf
-├── Kalulu-Manual_teacher_es.pdf     Kalulu-Manual_parent_es.pdf
-├── Kalulu-Manual_teacher_pt_BR.pdf  Kalulu-Manual_parent_pt_BR.pdf
-└── Kalulu-Manual_teacher_it.pdf     Kalulu-Manual_parent_it.pdf
+├── Kalulu-Manuel-enseignant-fr.pdf      Kalulu-Manuel-parent-fr.pdf
+├── Kalulu-Manual-docente-es.pdf         Kalulu-Manual-familia-es.pdf
+├── Kalulu-Manual-professor-pt-BR.pdf    Kalulu-Manual-familia-pt-BR.pdf
+└── Kalulu-Manuale-insegnante-it.pdf     Kalulu-Manuale-genitore-it.pdf
 ```
+
+The names come from each language's own `filenames:` block, because these
+files are handed to the public: a Spanish reader should not be downloading
+`teacher_es`. ASCII only and no spaces, since they travel through download
+links and mail attachments; the locale tag stays because Spanish and
+Portuguese both name the parent manual `familia`, and the build refuses to
+start if two manuals would land on one filename.
 
 Each covers how the game is played — the chain of gardens, what a lesson is,
 bosses, the brain screen — then creating an account, signing in, how a child

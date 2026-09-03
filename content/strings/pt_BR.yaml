@@ -14,6 +14,15 @@ meta:
   subtitle_teacher: "Guia do professor — criar uma conta, gerenciar os estudantes"
   subtitle_parent: "Guia da família — criar uma conta, gerenciar os estudantes"
 
+# What the finished PDFs are called. These go to the public, so they are in
+# this language rather than in English -- and ASCII only, without spaces or
+# apostrophes, since they travel through download links and mail
+# attachments. The locale tag stays: Spanish and Portuguese both name the
+# parent manual "familia", and every language is offered from one page.
+filenames:
+  teacher: "Kalulu-Manual-professor-pt-BR"
+  parent: "Kalulu-Manual-familia-pt-BR"
+
 labels:
   contents: "Sumário"
   language: "Idioma"

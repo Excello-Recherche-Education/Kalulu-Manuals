@@ -84,6 +84,12 @@ class Manual:
     #: translation is unreviewed, on the cover.
     warnings: list[str] = field(default_factory=list)
 
+    #: The file this manual is written to, without the extension. Set from the
+    #: locale's own `filenames:` block, because these are handed to the public:
+    #: a Spanish reader should not be downloading "teacher_es". Falls back to
+    #: the internal scheme when a language has not named itself yet.
+    filename: str = ""
+
     @property
     def stem(self) -> str:
-        return f"Kalulu-Manual_{self.audience}_{self.locale}"
+        return self.filename or f"Kalulu-Manual_{self.audience}_{self.locale}"

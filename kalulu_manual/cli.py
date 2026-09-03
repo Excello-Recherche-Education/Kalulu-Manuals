@@ -123,6 +123,21 @@ def cmd_build(args: argparse.Namespace) -> int:
 
     library = _library()
     built, problems = [], 0
+    # Two manuals sharing a filename would leave one silently overwritten, and
+    # the names come from the translations now -- Spanish and Portuguese both
+    # reach for "familia" unprompted. Caught before anything is written.
+    planned: dict[str, str] = {}
+    for locale in locales:
+        for audience in audiences:
+            stem = content.build(locale, audience).stem
+            if stem in planned:
+                raise SystemExit(
+                    f"error: {locale}/{audience} and {planned[stem]} would both be"
+                    f" written to {stem}.pdf; give them different names in"
+                    " content/strings/<locale>.yaml under filenames:"
+                )
+            planned[stem] = f"{locale}/{audience}"
+
     for locale in locales:
         for audience in audiences:
             manual = content.build(locale, audience, strict=args.strict)

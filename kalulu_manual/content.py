@@ -204,6 +204,16 @@ class ContentSet:
             )
 
         meta = loc.get("meta") or {}
+        filename = str(((loc.get("filenames") or {}).get(audience) or "")).strip()
+        if not filename:
+            warnings.append(
+                f"{locale}.yaml: no filenames.{audience}; falling back to an"
+                " English filename, which readers of this language will see"
+            )
+        elif "/" in filename or "\\" in filename:
+            raise ContentError(
+                f"{locale}.yaml: filenames.{audience} must be a name, not a path"
+            )
         subtitle_key = f"subtitle_{audience}"
         return Manual(
             locale=locale,
@@ -212,6 +222,7 @@ class ContentSet:
             subtitle=text(meta.get(subtitle_key) or meta.get("subtitle"), f"{locale} meta") or "",
             app_version=str(self.structure.get("app_version", "")),
             reviewed=bool(loc.get("reviewed", False)),
+            filename=filename,
             sections=tuple(sections),
             warnings=warnings,
         )
