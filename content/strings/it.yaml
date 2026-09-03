@@ -146,8 +146,13 @@ sections:
           Nella schermata iniziale, resta sulla scheda di accesso, inserisci il
           tuo indirizzo email e la tua password, poi premi {ui:NEXT}.
         note: >-
-          Password dimenticata? Usa «{ui:RESET_PASSWORD}»: Kalulu invia un link
-          al tuo indirizzo email.
+          Il pulsante «{ui:RESET_PASSWORD}» non c'è all'inizio: compare solo
+          dopo un tentativo di accesso rifiutato per la password, sotto il
+          messaggio «{ui:LOGIN_WRONG_PASSWORD}». Premilo e Kalulu invia un link
+          all'indirizzo inserito, poi mostra «{ui:CHECK_YOUR_EMAIL}»; il
+          pulsante resta poi disattivato, perché viene inviato un solo
+          messaggio. Se il messaggio è «{ui:LOGIN_USER_NOT_FOUND}», il pulsante
+          non comparirà: è l'indirizzo da correggere.
       pick-device:
         title: "Scegliere il dispositivo"
         body: >-

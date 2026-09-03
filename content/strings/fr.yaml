@@ -139,8 +139,13 @@ sections:
           votre adresse mail et votre mot de passe, puis appuyez sur
           {ui:NEXT}.
         note: >-
-          Mot de passe oublié ? Utilisez « {ui:RESET_PASSWORD} » : Kalulu envoie
-          un lien à votre adresse mail.
+          Le bouton « {ui:RESET_PASSWORD} » n'est pas là au départ : il
+          n'apparaît qu'après une tentative de connexion refusée sur le mot de
+          passe, sous le message « {ui:LOGIN_WRONG_PASSWORD} ». Appuyez dessus
+          et Kalulu envoie un lien à l'adresse saisie, puis affiche
+          « {ui:CHECK_YOUR_EMAIL} » ; le bouton reste ensuite inactif, un seul
+          message étant envoyé. Si le message est « {ui:LOGIN_USER_NOT_FOUND} »,
+          le bouton n'apparaîtra pas : c'est l'adresse qu'il faut corriger.
       pick-device:
         title: "Choisir l'appareil"
         body: >-

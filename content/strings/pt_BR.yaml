@@ -144,8 +144,13 @@ sections:
           Na tela inicial, fique na aba de acesso, digite seu e-mail e sua senha
           e toque em {ui:NEXT}.
         note: >-
-          Esqueceu a senha? Use «{ui:RESET_PASSWORD}»: o Kalulu envia um link
-          para o seu e-mail.
+          O botão «{ui:RESET_PASSWORD}» não está ali de início: ele só
+          aparece depois de uma tentativa de acesso recusada pela senha, sob a
+          mensagem «{ui:LOGIN_WRONG_PASSWORD}». Toque nele e o Kalulu envia um
+          link para o endereço informado, e depois mostra
+          «{ui:CHECK_YOUR_EMAIL}»; o botão fica inativo em seguida, pois só uma
+          mensagem é enviada. Se a mensagem for «{ui:LOGIN_USER_NOT_FOUND}», o
+          botão não aparecerá: é o endereço que precisa ser corrigido.
       pick-device:
         title: "Escolher o dispositivo"
         body: >-
