@@ -118,8 +118,14 @@ sections:
           A última tela resume a conta: e-mail, tipo de conta, número de
           dispositivos e os estudantes com o respectivo código. Confira e confirme.
         note: >-
-          O botão «{ui:SAVE_ALL_CODES}» salva a folha de códigos em um arquivo.
-          Guarde-a: é com esses códigos que os estudantes entram.
+          É preciso tocar em «{ui:SAVE_ALL_CODES}» para que «{ui:VALIDATE}»
+          fique ativo: é o único momento em que a folha de códigos é oferecida.
+          Basta tocar: mesmo que você feche a janela de salvamento sem salvar
+          nada, «{ui:VALIDATE}» fica clicável. Salve-a de todo modo: é com
+          esses códigos que os estudantes entram. Atenção: se você voltar para
+          mudar um nome ou o número de estudantes, a folha deixa de descrever a
+          conta, então é preciso pedi-la de novo, e «{ui:VALIDATE}» se desativa
+          até lá.
       created:
         title: "A conta foi criada"
         body: >-

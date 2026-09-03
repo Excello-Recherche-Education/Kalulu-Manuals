@@ -120,8 +120,14 @@ sections:
           account, numero di dispositivi e gli studenti con il loro codice.
           Controlla, poi conferma.
         note: >-
-          Il pulsante «{ui:SAVE_ALL_CODES}» salva il foglio dei codici in un
-          file. Conservalo: è con quei codici che accedono gli studenti.
+          Bisogna premere «{ui:SAVE_ALL_CODES}» perché «{ui:VALIDATE}» si
+          attivi: è l'unico momento in cui il foglio dei codici viene proposto.
+          Basta premerlo: anche se chiudi la finestra di salvataggio senza
+          salvare nulla, «{ui:VALIDATE}» diventa cliccabile. Salvalo comunque:
+          è con quei codici che accedono gli studenti. Attenzione: se torni
+          indietro per cambiare un nome o il numero di studenti, il foglio non
+          descrive più l'account, quindi va richiesto di nuovo e
+          «{ui:VALIDATE}» resta disattivato fino a quel momento.
       created:
         title: "L'account è stato creato"
         body: >-

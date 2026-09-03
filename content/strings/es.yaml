@@ -120,8 +120,14 @@ sections:
           cuenta, número de dispositivos y los estudiantes con su código.
           Compruébelo y confirme.
         note: >-
-          El botón «{ui:SAVE_ALL_CODES}» guarda la hoja de códigos en un
-          archivo. Consérvela: son los códigos con los que entran los estudiantes.
+          Hay que pulsar «{ui:SAVE_ALL_CODES}» para que «{ui:VALIDATE}» se
+          active: es el único momento en que se ofrece la hoja de códigos.
+          Basta con pulsarlo: aunque cierre la ventana de guardado sin guardar
+          nada, «{ui:VALIDATE}» queda disponible. Guárdela de todos modos: son
+          los códigos con los que entran los estudiantes. Ojo: si vuelve atrás
+          para cambiar un nombre o el número de estudiantes, la hoja ya no
+          describe la cuenta, así que hay que pedirla otra vez y
+          «{ui:VALIDATE}» se desactiva hasta entonces.
       created:
         title: "La cuenta ya está creada"
         body: >-

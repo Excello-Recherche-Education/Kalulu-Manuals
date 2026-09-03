@@ -113,9 +113,15 @@ sections:
           nombre d'appareils et les étudiants avec leur code. Vérifiez, puis
           confirmez.
         note: >-
-          Le bouton « {ui:SAVE_ALL_CODES} » enregistre la fiche des codes dans
-          un fichier. Gardez-la : c'est avec ces codes que les étudiants se
-          connectent.
+          Le bouton « {ui:SAVE_ALL_CODES} » doit être pressé pour que
+          « {ui:VALIDATE} » s'active : c'est le seul moment où la fiche des
+          codes est proposée. Il suffit d'appuyer — même si vous refermez la
+          fenêtre d'enregistrement sans rien sauvegarder, « {ui:VALIDATE} »
+          devient cliquable. Enregistrez-la tout de même : c'est avec ces codes
+          que les étudiants se connectent. Attention, si vous revenez en
+          arrière pour changer un nom ou le nombre d'étudiants, la fiche ne
+          décrit plus le compte : il faut la redemander, et « {ui:VALIDATE} »
+          se désactive jusque-là.
       created:
         title: "Le compte est créé"
         body: >-
