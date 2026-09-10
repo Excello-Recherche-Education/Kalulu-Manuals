@@ -34,6 +34,31 @@ They are navigable, not just printable: the table of contents is clickable and
 carries page numbers, and every section and step is a bookmark in the reader's
 sidebar. Page numbers come from a two-pass build, so they are the real ones.
 
+## The installation help
+
+One more PDF lives here, and it is not one of the manuals:
+
+```
+installation-help/Kalulu Installation Help.pdf
+```
+
+It covers getting a desktop build to launch — placing the two Windows files and
+answering SmartScreen, and on macOS the several ways past Gatekeeper for an app
+that is not signed. It exists because that was two separate documents, a Word
+file for Windows and a PDF for macOS, and a person downloading a build could not
+tell which one they needed until they opened it. Now it opens on a contents page
+that sends them to their platform.
+
+```bash
+python tools/build_installation_help.py
+```
+
+**It is the one PDF committed to this repository.** The manuals are not, because
+they are regenerated from the app on every release and would only bloat the
+history. This one is written by hand, does not change per release, and the
+release pipeline attaches it to every GitHub release — so it has to be in a
+fresh clone, and cannot live in the gitignored `build/`.
+
 ## Why generate them
 
 The manuals used to be Google Docs: a paragraph, a pasted screenshot, a red
