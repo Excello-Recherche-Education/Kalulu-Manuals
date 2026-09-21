@@ -14,6 +14,7 @@ from .capture import (
 )
 from .content import ContentError, ContentSet
 from .render import build_pdf
+from .scan import ScanError, render as render_scan, scan
 from .shots import ShotLibrary
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -319,6 +320,23 @@ def cmd_annotations(args: argparse.Namespace) -> int:
     return 1 if library.unresolved else 0
 
 
+def cmd_scan(args: argparse.Namespace) -> int:
+    """Report what changed in the app that the guides may have to explain.
+
+    Read-only, and advisory: every finding is for a person to judge. Exits 1
+    when something wants a decision before this release's guides go out, so
+    the release script can stop and ask; an undocumented screen alone is
+    reported without holding anything up, since it has been that way for
+    releases and does not make *this* guide wrong.
+    """
+    frontend = find_frontend(Path(args.frontend) if args.frontend else None)
+    result = scan(ROOT, frontend, args.since, args.until)
+    print(render_scan(result))
+    if not result.anything:
+        return 0
+    return 1 if result.needs_a_decision else 0
+
+
 def cmd_sync_ui_strings(args: argparse.Namespace) -> int:
     source = Path(args.csv) if args.csv else find_frontend() / "kalulu_localization.csv"
     if not source.is_file():
@@ -368,6 +386,15 @@ def main(argv: list[str] | None = None) -> int:
     ann.add_argument("--out", help="output PNG (default build/annotations_<locale>.png)")
     ann.set_defaults(func=cmd_annotations)
 
+    scn = subparsers.add_parser(
+        "scan", help="what changed in the app that the guides may need to explain")
+    scn.add_argument("--since", required=True,
+                     help="the previous release's frontend ref, e.g. game/3.1.4")
+    scn.add_argument("--until", default="HEAD",
+                     help="the ref being released (default HEAD)")
+    scn.add_argument("--frontend", help="path to Kalulu-Frontend (default: next door)")
+    scn.set_defaults(func=cmd_scan)
+
     sync = subparsers.add_parser("sync-ui-strings",
                                  help="refresh the vendored copy of the app's translations")
     sync.add_argument("csv", nargs="?", help="path to kalulu_localization.csv")
@@ -376,7 +403,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return int(args.func(args))
-    except (ContentError, CaptureError) as exc:
+    except (ContentError, CaptureError, ScanError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
