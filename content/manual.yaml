@@ -2,11 +2,21 @@
 # for each id lives in content/strings/<locale>.yaml, so re-ordering a flow does
 # not touch four translations and fixing a sentence cannot move an arrow.
 #
-# `audiences` on a section or a step restricts it. The teacher and parent
-# manuals really do differ in the app -- a parent names each child during
-# registration, a teacher only says how many students a device has and renames
-# them afterwards -- and that difference is expressed here rather than by
-# keeping two documents in step by hand.
+# `audiences` on a section or a step restricts it: the app really does differ
+# for a parent and a teacher -- a parent names each child during registration,
+# a teacher only says how many students a device has and renames them
+# afterwards.
+#
+# It does NOT split the output. One language makes ONE manual, and a restricted
+# step is marked on the page instead: a chip above its title, plus a callout
+# wherever the flow forks saying which numbered steps each reader follows and
+# where everyone rejoins. Both are generated from this file, so re-ordering a
+# flow cannot leave the callout naming the wrong steps.
+#
+# There used to be one manual per audience, which meant a reader had to decide
+# whether they were "more a teacher or a parent" before they had read a word of
+# either -- for four steps of difference out of thirty-four. Whoever hands out
+# the link now has one file per language and nothing to explain.
 
 version: 1
 # The **released** version this manual describes, which is deliberately behind
@@ -20,11 +30,17 @@ app_version: "3.1.2"
 # The languages Kalulu's interface is translated into, which is what a manual
 # about using that interface has to follow. See README, "Languages".
 locales: [fr, es, pt_BR, it]
+# The order the audiences are listed in on the page: chips are tinted in this
+# order, and a fork callout names them in it.
 audiences: [teacher, parent]
 
 sections:
   - id: getting-started
     steps:
+      # First, and with no screenshot: it is about the document rather than
+      # the app. One manual serves teachers and parents, so it has to say so
+      # before the reader meets the first chip and wonders what it means.
+      - id: who-this-is-for
       - id: welcome
         shot: welcome
       - id: two-kinds-of-login

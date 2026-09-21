@@ -4,17 +4,16 @@ reviewed: true
 
 meta:
   title: "Manuel d'utilisation de Kalulu"
-  subtitle_teacher: "Guide de l'enseignant — créer un compte, gérer les étudiants"
-  subtitle_parent: "Guide du parent — créer un compte, gérer les étudiants"
+  # One subtitle, naming both readers: nobody has to pick a side before
+  # opening the document.
+  subtitle: "Pour les enseignants et les parents — créer un compte, gérer les étudiants"
 
-# What the finished PDFs are called. These go to the public, so they are in
-# this language rather than in English -- and ASCII only, without spaces or
-# apostrophes, since they travel through download links and mail
-# attachments. The locale tag stays: Spanish and Portuguese both name the
-# parent manual "familia", and every language is offered from one page.
+# What the finished PDF is called: one per language, in that language rather
+# than in English since it goes to the public -- and ASCII only, without
+# spaces or apostrophes, because it travels through download links and mail
+# attachments. The locale tag stays: every language is offered from one page.
 filenames:
-  teacher: "Kalulu-Manuel-enseignant-fr"
-  parent: "Kalulu-Manuel-parent-fr"
+  manual: "Kalulu-Manuel-fr"
 
 labels:
   contents: "Sommaire"
@@ -22,14 +21,30 @@ labels:
   app_version: "Version de Kalulu"
   generated: "Document généré le"
   unreviewed: "BROUILLON — cette traduction n'a pas encore été relue par un locuteur natif."
+  # How each reader is named on the page: the chip on a step that is not for
+  # everyone, and the callout where the flow forks. Stored lowercase, as the
+  # common noun it is -- `{^audience}` capitalises it where a label or a line
+  # starts on it, `{audience}` leaves it alone inside a phrase. It has to
+  # read as a label ("Enseignant"), not as a sentence. It is the app's own
+  # word for the account type -- "Enseignant" / "Parent" in ui_strings.csv
+  # -- so a reader recognises the answer they gave.
+  audience_teacher: "enseignant"
+  audience_parent: "parent"
+  audience_only: "{^audience} uniquement"
+  # The fork callout: an opening line, one line per reader, and where they meet
+  # again. {steps} is filled from step_one / step_range / step_list, computed
+  # from the structure, so the numbers are always the real ones.
+  fork_intro: "Le parcours se sépare ici, selon le type de compte :"
+  fork_line: "{^audience} : {steps}"
+  fork_rejoin: "Tout le monde se retrouve ensuite à l'{steps}."
+  step_one: "étape {n}"
+  step_range: "étapes {a} à {b}"
+  step_list: "étapes {list}"
 
+# The manual's own glossary: a word the document leans on, named once so every
+# section names it the same way. `{^adult}` capitalises it to open a sentence.
 vocabulary:
-  teacher:
-    adult: "l'enseignant"
-    you_are: "enseignant"
-  parent:
-    adult: "le parent"
-    you_are: "parent"
+  adult: "l'adulte"
 
 sections:
   getting-started:
@@ -39,6 +54,18 @@ sections:
       couvre tout ce qui se passe avant le jeu lui-même : créer le compte,
       s'y connecter, et gérer les étudiants.
     steps:
+      who-this-is-for:
+        title: "Un seul manuel, pour les enseignants et les parents"
+        body: >-
+          Kalulu s'utilise en classe comme à la maison, et presque tout s'y
+          passe de la même façon. Ce manuel couvre donc les deux : lisez-le du
+          début à la fin, sans avoir à choisir entre deux documents.
+        note: >-
+          Les rares étapes qui ne concernent qu'un seul lecteur portent une
+          étiquette, « Enseignant uniquement » ou « Parent uniquement » :
+          passez celles qui ne sont pas les vôtres. Et là où le parcours se
+          sépare vraiment, un encadré indique quelles étapes suivre et à quelle
+          étape tout le monde se retrouve.
       welcome:
         title: "L'écran d'accueil"
         body: >-
@@ -77,8 +104,9 @@ sections:
       account-type:
         title: "Indiquer le type de compte"
         body: >-
-          Choisissez « {ui:TEACHER} » ou « {ui:PARENT} ». Vous êtes
-          {you_are} : les questions suivantes en dépendent.
+          Choisissez « {ui:TEACHER} » si les étudiants utilisent Kalulu en
+          classe, « {ui:PARENT} » s'il s'agit de vos enfants à la maison.
+          C'est cette réponse qui détermine les écrans suivants.
       method:
         title: "Choisir la méthode d'éducation"
         body: >-

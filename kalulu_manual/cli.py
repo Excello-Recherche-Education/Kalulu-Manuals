@@ -105,7 +105,6 @@ def cmd_capture(args: argparse.Namespace) -> int:
 def cmd_build(args: argparse.Namespace) -> int:
     content = ContentSet.load(ROOT)
     locales = _selected(args.locale, content.locales, "locale")
-    audiences = _selected(args.audience, content.audiences, "audience")
     out_dir = Path(args.out) if args.out else BUILD / "manuals"
 
     if not args.no_capture:
@@ -124,33 +123,32 @@ def cmd_build(args: argparse.Namespace) -> int:
     library = _library()
     built, problems = [], 0
     # Two manuals sharing a filename would leave one silently overwritten, and
-    # the names come from the translations now -- Spanish and Portuguese both
-    # reach for "familia" unprompted. Caught before anything is written.
+    # the names come from the translations now. Less likely since one locale
+    # makes one document, but a copy-pasted `filenames:` block still does it.
+    # Caught before anything is written.
     planned: dict[str, str] = {}
     for locale in locales:
-        for audience in audiences:
-            stem = content.build(locale, audience).stem
-            if stem in planned:
-                raise SystemExit(
-                    f"error: {locale}/{audience} and {planned[stem]} would both be"
-                    f" written to {stem}.pdf; give them different names in"
-                    " content/strings/<locale>.yaml under filenames:"
-                )
-            planned[stem] = f"{locale}/{audience}"
+        stem = content.build(locale).stem
+        if stem in planned:
+            raise SystemExit(
+                f"error: {locale} and {planned[stem]} would both be written to"
+                f" {stem}.pdf; give them different names in"
+                " content/strings/<locale>.yaml under filenames:"
+            )
+        planned[stem] = locale
 
     for locale in locales:
-        for audience in audiences:
-            manual = content.build(locale, audience, strict=args.strict)
-            path = out_dir / f"{manual.stem}.pdf"
-            build_pdf(manual, path, library, labels=content.labels(locale))
-            built.append((path, manual))
-            size = path.stat().st_size / 1024
-            flag = "" if manual.reviewed else "  [translation unreviewed]"
-            print(f"  {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}"
-                  f"  {size:.0f} KB{flag}")
-            for warning in dict.fromkeys(manual.warnings):
-                problems += 1
-                print(f"      ! {warning}")
+        manual = content.build(locale, strict=args.strict)
+        path = out_dir / f"{manual.stem}.pdf"
+        build_pdf(manual, path, library, labels=content.labels(locale))
+        built.append((path, manual))
+        size = path.stat().st_size / 1024
+        flag = "" if manual.reviewed else "  [translation unreviewed]"
+        print(f"  {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}"
+              f"  {size:.0f} KB{flag}")
+        for warning in dict.fromkeys(manual.warnings):
+            problems += 1
+            print(f"      ! {warning}")
 
     for anchor in dict.fromkeys(library.unresolved):
         problems += 1
@@ -195,18 +193,39 @@ def cmd_check(_args: argparse.Namespace) -> int:
 
     print("\ncontent")
     for locale in content.locales:
-        for audience in content.audiences:
-            try:
-                manual = content.build(locale, audience, strict=True)
-            except ContentError as exc:
-                failures += 1
-                print(f"  FAIL {locale}/{audience}: {exc}")
-                continue
-            state = "ok" if manual.reviewed else "unreviewed translation"
-            note = f", {len(manual.warnings)} warning(s)" if manual.warnings else ""
-            print(f"  {locale}/{audience}: {len(manual.sections)} sections, {state}{note}")
-            for warning in dict.fromkeys(manual.warnings):
-                print(f"      ! {warning}")
+        try:
+            manual = content.build(locale, strict=True)
+        except ContentError as exc:
+            failures += 1
+            print(f"  FAIL {locale}: {exc}")
+            continue
+        state = "ok" if manual.reviewed else "unreviewed translation"
+        note = f", {len(manual.warnings)} warning(s)" if manual.warnings else ""
+        print(f"  {locale}: {len(manual.sections)} sections, {state}{note}")
+        for warning in dict.fromkeys(manual.warnings):
+            print(f"      ! {warning}")
+
+    # One document per language now, so the teacher/parent split is no longer
+    # visible as two files. Print it instead: these are the only steps a reader
+    # is asked to skip, and a flow edit that leaves none of them -- or all of
+    # them -- should be noticed here rather than in a PDF nobody opened.
+    print("\naudiences")
+    if not content.audiences:
+        print("  none declared; every step is for every reader")
+    else:
+        manual = content.build(content.locales[0])
+        restricted = [
+            (section, number, step)
+            for section in manual.sections
+            for number, step in enumerate(section.steps, start=1)
+            if not step.is_shared
+        ]
+        total = sum(len(s.steps) for s in manual.sections)
+        print(f"  {', '.join(content.audiences)}: {len(restricted)} of {total}"
+              f" step(s) apply to some readers and not others")
+        for section, number, step in restricted:
+            print(f"  - {section.id}/{step.id} (step {number}):"
+                  f" {', '.join(step.audiences)}")
 
     print("\nscreenshots")
     undefined = [k for k in keys if k not in catalogue]
@@ -262,7 +281,7 @@ def cmd_annotations(args: argparse.Namespace) -> int:
         for step in section.get("steps", []):
             if not step.get("annotations") or not step.get("shot"):
                 continue
-            manual = content.build(locale, content.audiences[0])
+            manual = content.build(locale)
             found = next(
                 (s for s in manual.sections if s.id == section["id"]), None
             )
@@ -325,7 +344,6 @@ def main(argv: list[str] | None = None) -> int:
 
     build = subparsers.add_parser("build", help="render the PDFs")
     common(build)
-    build.add_argument("--audience", action="append", help="teacher | parent")
     build.add_argument("--out", help="output directory (default build/manuals)")
     build.add_argument("--strict", action="store_true",
                        help="fail on missing screenshots or untranslated UI keys")

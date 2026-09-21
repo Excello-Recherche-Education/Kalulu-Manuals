@@ -4,13 +4,17 @@ Two files decide what a manual says:
 
 * `content/manual.yaml` — the *structure*, which is language-neutral: the order
   of sections and steps, which screenshot each step shows, where the arrows and
-  circles go, and which audiences a step applies to.
+  circles go, and which audiences a step is restricted to.
 * `content/strings/<locale>.yaml` — the *prose* for that language, keyed by the
   same ids.
 
 They are separate because they rot at different rates and are edited by
 different people: re-ordering a flow should not touch four translations, and
 fixing a Portuguese sentence should not risk moving an arrow.
+
+One locale makes one manual. `audiences:` no longer splits the output — a
+teacher and a parent read the same document, and the few steps that apply to
+one of them are labelled in place. See `render.py`.
 """
 from __future__ import annotations
 
@@ -23,16 +27,36 @@ import yaml
 from .model import Annotation, Manual, Section, Step
 from .uistrings import UIStrings
 
-#: ``{learner}`` and friends — audience vocabulary, substituted per document.
-#: A leading caret asks for the first letter capitalised: ``{^adult}`` opens a
+#: ``{adult}`` and friends — the manual's own glossary, defined once per locale
+#: so a word the document leans on is named the same way in every section. A
+#: leading caret asks for the first letter capitalised: ``{^adult}`` opens a
 #: sentence, ``{adult}`` sits inside one. Without it every sentence starting on
-#: a vocabulary word came out lowercase — "l'enseignant se connecte", "el
-#: docente entra" — in all four languages at once, which is exactly how a
+#: a glossary word came out lowercase — "l'adulte se connecte", "el adulto
+#: entra" — in all four languages at once, which is exactly how a
 #: machine-translated document reads.
 VOCAB_REF = re.compile(r"\{(\^?)([a-z_]+)\}")
 
-#: Anything left in braces once the app labels and the vocabulary are in.
+#: Anything left in braces once the app labels and the glossary are in.
 LEFTOVER_BRACE = re.compile(r"\{[^{}]*\}")
+
+#: Chrome the renderer cannot invent: it would otherwise fall back to English
+#: inside an otherwise French document, which nothing would flag. Checked per
+#: locale at build time and reported as a warning, so `--strict` catches it.
+#: `audience_<name>` is required on top of these, one per declared audience.
+REQUIRED_LABELS = (
+    "contents",
+    "language",
+    "app_version",
+    "generated",
+    "unreviewed",
+    "audience_only",
+    "fork_intro",
+    "fork_line",
+    "fork_rejoin",
+    "step_one",
+    "step_range",
+    "step_list",
+)
 
 
 class ContentError(Exception):
@@ -92,10 +116,15 @@ class ContentSet:
 
     @property
     def audiences(self) -> list[str]:
-        return list(self.structure.get("audiences", ["teacher"]))
+        """Who the manual is written for, in the order the page lists them.
+
+        Not an output axis any more: every audience is in every manual.
+        """
+        return list(self.structure.get("audiences", []))
 
     def labels(self, locale: str) -> dict[str, str]:
-        """Chrome the renderer needs translated: 'Contents', the draft banner."""
+        """Chrome the renderer needs translated: 'Contents', the draft banner,
+        the audience chips, the wording of a fork callout."""
         return dict((self.strings.get(locale) or {}).get("labels") or {})
 
     def shot_keys(self) -> list[str]:
@@ -108,20 +137,43 @@ class ContentSet:
 
     # -- assembly -------------------------------------------------------------
 
-    def build(self, locale: str, audience: str, *, strict: bool = False) -> Manual:
+    def _audiences_of(self, raw: dict, where: str) -> tuple[str, ...]:
+        """Read and normalise an `audiences:` restriction.
+
+        A typo used to make the step vanish from every manual, silently,
+        because it matched no audience. It is fatal now. Naming *every*
+        audience is the same thing as naming none, and comes out empty so the
+        page carries no pointless "teacher and parent only" chip.
+        """
+        listed = tuple(raw.get("audiences", ()) or ())
+        unknown = [a for a in listed if a not in self.audiences]
+        if unknown:
+            raise ContentError(
+                f"{where}: unknown audience(s) {', '.join(unknown)};"
+                f" manual.yaml declares {', '.join(self.audiences) or '(none)'}"
+            )
+        if set(listed) >= set(self.audiences):
+            return ()
+        return listed
+
+    def build(self, locale: str, *, strict: bool = False) -> Manual:
         if locale not in self.strings:
             raise ContentError(f"no strings file for locale {locale!r}")
-        if audience not in self.audiences:
-            raise ContentError(f"unknown audience {audience!r}")
 
         loc = self.strings[locale]
         warnings: list[str] = []
-        vocab = (loc.get("vocabulary") or {}).get(audience)
-        if vocab is None:
-            raise ContentError(f"{locale}.yaml: no vocabulary for audience {audience!r}")
+        vocab = dict(loc.get("vocabulary") or {})
+
+        labels = self.labels(locale)
+        for key in (*REQUIRED_LABELS, *(f"audience_{a}" for a in self.audiences)):
+            if not str(labels.get(key) or "").strip():
+                warnings.append(
+                    f"{locale}.yaml: no labels.{key}; the document would fall back"
+                    " to English wording in a page that is not in English"
+                )
 
         def text(raw: str | None, where: str) -> str | None:
-            """Resolve app labels, then audience vocabulary."""
+            """Resolve app labels, then the manual's own glossary."""
             if raw is None:
                 return None
             resolved, problems = self.ui.resolve(locale, raw, strict=strict)
@@ -133,7 +185,7 @@ class ContentSet:
                 if word in vocab:
                     value = str(vocab[word])
                     return value[:1].upper() + value[1:] if caret else value
-                warnings.append(f"{where}: no {audience} vocabulary for {{{word}}} in {locale}")
+                warnings.append(f"{where}: no vocabulary for {{{word}}} in {locale}")
                 return match.group(0)
 
             substituted = VOCAB_REF.sub(sub, resolved)
@@ -154,9 +206,7 @@ class ContentSet:
         sections: list[Section] = []
         for raw_section in self.structure.get("sections", []):
             sid = raw_section["id"]
-            audiences = tuple(raw_section.get("audiences", ()))
-            if audiences and audience not in audiences:
-                continue
+            audiences = self._audiences_of(raw_section, f"section {sid}")
             translated = loc_sections.get(sid)
             if translated is None:
                 raise ContentError(f"{locale}.yaml: section {sid!r} is not translated")
@@ -165,15 +215,13 @@ class ContentSet:
             steps: list[Step] = []
             for raw_step in raw_section.get("steps", []):
                 step_id = raw_step["id"]
-                step_audiences = tuple(raw_step.get("audiences", ()))
-                if step_audiences and audience not in step_audiences:
-                    continue
+                step_audiences = self._audiences_of(raw_step, f"{sid}/{step_id}")
                 tr = loc_steps.get(step_id)
                 if tr is None:
                     raise ContentError(
                         f"{locale}.yaml: step {sid}/{step_id!r} is not translated"
                     )
-                where = f"{locale}/{audience} {sid}/{step_id}"
+                where = f"{locale} {sid}/{step_id}"
                 body = text(tr.get("body"), where)
                 if not body:
                     raise ContentError(f"{locale}.yaml: step {sid}/{step_id!r} has no body")
@@ -204,25 +252,24 @@ class ContentSet:
             )
 
         meta = loc.get("meta") or {}
-        filename = str(((loc.get("filenames") or {}).get(audience) or "")).strip()
+        filename = str(((loc.get("filenames") or {}).get("manual") or "")).strip()
         if not filename:
             warnings.append(
-                f"{locale}.yaml: no filenames.{audience}; falling back to an"
+                f"{locale}.yaml: no filenames.manual; falling back to an"
                 " English filename, which readers of this language will see"
             )
         elif "/" in filename or "\\" in filename:
             raise ContentError(
-                f"{locale}.yaml: filenames.{audience} must be a name, not a path"
+                f"{locale}.yaml: filenames.manual must be a name, not a path"
             )
-        subtitle_key = f"subtitle_{audience}"
         return Manual(
             locale=locale,
-            audience=audience,
             title=text(meta.get("title"), f"{locale} meta") or "Kalulu",
-            subtitle=text(meta.get(subtitle_key) or meta.get("subtitle"), f"{locale} meta") or "",
+            subtitle=text(meta.get("subtitle"), f"{locale} meta") or "",
             app_version=str(self.structure.get("app_version", "")),
             reviewed=bool(loc.get("reviewed", False)),
             filename=filename,
             sections=tuple(sections),
+            audiences=tuple(self.audiences),
             warnings=warnings,
         )

@@ -41,10 +41,16 @@ class Step:
     shot: str | None = None
     note: str | None = None
     annotations: tuple[Annotation, ...] = ()
-    audiences: tuple[str, ...] = ()  # empty means every audience
+    #: The audiences this step is *only* for. Empty means every reader, which
+    #: is the overwhelming majority: one manual serves teachers and parents
+    #: alike, and the handful of steps that do not are marked on the page
+    #: rather than split into a second document. A step naming every known
+    #: audience is normalised to empty when the manual is assembled.
+    audiences: tuple[str, ...] = ()
 
-    def applies_to(self, audience: str) -> bool:
-        return not self.audiences or audience in self.audiences
+    @property
+    def is_shared(self) -> bool:
+        return not self.audiences
 
 
 @dataclass(frozen=True)
@@ -53,32 +59,34 @@ class Section:
     title: str
     intro: str | None
     steps: tuple[Step, ...]
+    #: As on a Step, and just as rare — no section is audience-specific today.
     audiences: tuple[str, ...] = ()
 
-    def applies_to(self, audience: str) -> bool:
-        return not self.audiences or audience in self.audiences
-
-    def for_audience(self, audience: str) -> "Section":
-        return Section(
-            id=self.id,
-            title=self.title,
-            intro=self.intro,
-            steps=tuple(s for s in self.steps if s.applies_to(audience)),
-            audiences=self.audiences,
-        )
+    @property
+    def is_shared(self) -> bool:
+        return not self.audiences
 
 
 @dataclass(frozen=True)
 class Manual:
-    """A single built document: one locale, one audience."""
+    """A single built document: one locale, every audience.
+
+    There used to be one per audience, which meant a teacher and a parent had
+    to know which of two files was theirs before they had read a word of
+    either. They now get the same document; the few steps that apply to one
+    and not the other are labelled where they stand.
+    """
 
     locale: str
-    audience: str
     title: str
     subtitle: str
     app_version: str
     reviewed: bool
     sections: tuple[Section, ...]
+    #: Every audience the document covers, in the order they should be listed.
+    #: From `audiences:` in manual.yaml, and it drives both the chips on
+    #: audience-specific steps and the callout at each point the flow forks.
+    audiences: tuple[str, ...] = ()
     #: Non-fatal problems found while assembling — missing screenshots,
     #: untranslated UI keys. Surfaced in the build report and, when the
     #: translation is unreviewed, on the cover.
@@ -86,10 +94,10 @@ class Manual:
 
     #: The file this manual is written to, without the extension. Set from the
     #: locale's own `filenames:` block, because these are handed to the public:
-    #: a Spanish reader should not be downloading "teacher_es". Falls back to
+    #: a Spanish reader should not be downloading "manual_es". Falls back to
     #: the internal scheme when a language has not named itself yet.
     filename: str = ""
 
     @property
     def stem(self) -> str:
-        return self.filename or f"Kalulu-Manual_{self.audience}_{self.locale}"
+        return self.filename or f"Kalulu-Manual_{self.locale}"

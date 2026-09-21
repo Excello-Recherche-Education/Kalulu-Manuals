@@ -32,6 +32,20 @@ WHITE = HexColor("#ffffff")
 #: manuals used a red pen; this keeps that read while staying on-palette.
 ANNOTATION = HexColor("#d32f2f")
 
+#: The fill and stroke of the callout that opens a fork in the flow. Distinct
+#: from the lavender note boxes on purpose: a note is an aside the reader may
+#: skip, a fork tells them which steps are theirs and must not read as one.
+CALLOUT = HexColor("#eceef8")
+
+#: One (fill, ink) pair per audience, cycled in the order `audiences:` lists
+#: them. Two audiences get two visibly different chips, so a reader learns
+#: "purple is not mine" once and then skims by colour rather than by reading
+#: every label.
+AUDIENCE_TINTS = (
+    (HexColor("#f4ecf4"), PURPLE),
+    (HexColor("#e9ebf7"), NAVY),
+)
+
 PAGE_SIZE = A4
 MARGIN_LEFT = 22 * mm
 MARGIN_RIGHT = 22 * mm

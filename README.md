@@ -1,7 +1,7 @@
 # Kalulu-Manuals
 
-Generator for the **Kalulu user manuals**: one PDF per language, per audience,
-with every screenshot rendered from the running app.
+Generator for the **Kalulu user manuals**: one PDF per language, with every
+screenshot rendered from the running app.
 
 [Kalulu](https://github.com/Excello-Recherche-Education) is an open-source
 educational app that helps children learn to read through the decoding
@@ -12,18 +12,24 @@ educational app that helps children learn to read through the decoding
 
 ```
 build/manuals/
-├── Kalulu-Manuel-enseignant-fr.pdf      Kalulu-Manuel-parent-fr.pdf
-├── Kalulu-Manual-docente-es.pdf         Kalulu-Manual-familia-es.pdf
-├── Kalulu-Manual-professor-pt-BR.pdf    Kalulu-Manual-familia-pt-BR.pdf
-└── Kalulu-Manuale-insegnante-it.pdf     Kalulu-Manuale-genitore-it.pdf
+├── Kalulu-Manuel-fr.pdf
+├── Kalulu-Manual-es.pdf
+├── Kalulu-Manual-pt-BR.pdf
+└── Kalulu-Manuale-it.pdf
 ```
+
+One file per language, and **one file is all there is per language**: a reader
+picks their language and nothing else. There used to be eight — a teacher
+manual and a parent manual each — which asked whoever downloaded one to decide
+whether they were "more a teacher or a parent" before reading a word of
+either, for four steps of difference out of thirty-four. See "Audiences".
 
 The names come from each language's own `filenames:` block, because these
 files are handed to the public: a Spanish reader should not be downloading
-`teacher_es`. ASCII only and no spaces, since they travel through download
-links and mail attachments; the locale tag stays because Spanish and
-Portuguese both name the parent manual `familia`, and the build refuses to
-start if two manuals would land on one filename.
+`manual_es`. ASCII only and no spaces, since they travel through download
+links and mail attachments; the locale tag stays because every language is
+offered from one page, and the build refuses to start if two manuals would
+land on one filename.
 
 Each covers how the game is played — the chain of gardens, what a lesson is,
 bosses, the brain screen — then creating an account, signing in, how a child
@@ -64,7 +70,7 @@ fresh clone, and cannot live in the gitignored `build/`.
 The manuals used to be Google Docs: a paragraph, a pasted screenshot, a red
 circle drawn by hand. That shape was right. What was wrong is that a person had
 to keep four languages and two audiences in step, and re-paste every screenshot
-whenever a screen changed. Three things follow from generating instead:
+whenever a screen changed. Four things follow from generating instead:
 
 - **Screenshots come from the app, in the manual's language.** No screen is
   photographed by hand, so a redesign reaches every manual on the next build.
@@ -76,6 +82,10 @@ whenever a screen changed. Three things follow from generating instead:
   `%AddStudentButton`, and the capture reports where that button actually
   landed. Hand-measured boxes would be wrong in three languages out of four,
   because a button is not the same width in Italian as in French.
+- **The audience split is computed, not written down.** A step marked
+  `audiences: [teacher]` gets its chip, and the callout at the fork names the
+  step numbers around it. Re-order the account flow and the callout follows;
+  a sentence saying "teachers, skip to step 7" would not.
 
 ## Languages
 
@@ -97,11 +107,33 @@ carry a **draft banner on the cover** until their `reviewed:` flag is set to
 
 ## Audiences
 
-Teacher and parent, because the app really does differ: a parent names each
-child during registration, a teacher only says how many students a device has
-and renames them afterwards. `audiences:` in `content/manual.yaml` marks the
-steps that apply to one and not the other, and each language file carries a
-`vocabulary:` block so *élève* becomes *enfant* throughout.
+Teacher and parent, in **one document**. The app really does differ between
+them — a parent names each child during registration, a teacher only says how
+many students a device has and renames them afterwards — but that is five
+steps out of forty-three, and splitting the manual in two over five steps made
+every reader answer a question about themselves before they could download
+anything.
+
+`audiences:` in `content/manual.yaml` still marks those steps. It no longer
+splits the output; it drives two marks on the page instead:
+
+- a **chip** above the step title — *Enseignant uniquement*, *Solo genitore* —
+  tinted per audience, so a reader skims past what is not theirs by colour
+  rather than by reading every label. The wording is the app's own name for the
+  account type, from `ui_strings.csv`, so a reader recognises the answer they
+  gave;
+- a **fork callout** wherever the flow genuinely splits: *Enseignant : étapes 4
+  à 6 · Parent : étape 7 · Tout le monde se retrouve ensuite à l'étape 8.*
+  Assembled from the structure, so the numbers are always the real ones. A run
+  that only one audience appears in is not a fork and gets no callout — its
+  chip already says everything.
+
+The first step of the manual explains both, before the reader meets either.
+`kalulu-manual check` prints the restricted steps, since one file no longer
+makes the split visible as two.
+
+`vocabulary:` in each language file is now a plain glossary: a word the
+document leans on, named once so every section names it the same way.
 
 ## Content packs
 
@@ -131,7 +163,7 @@ uv venv && uv pip install -e .
 
 ```bash
 kalulu-manual build            # capture anything missing, then render every PDF
-kalulu-manual build --locale fr --audience teacher
+kalulu-manual build --locale fr
 kalulu-manual build --no-capture     # never launch Godot; use what is on disk
 kalulu-manual capture --recapture    # re-render every screenshot from the app
 kalulu-manual check                  # validate content, report gaps, build nothing
@@ -170,7 +202,7 @@ content/
 ├── manual.yaml            structure: sections, steps, which screenshot, which annotations
 ├── shots.yaml             how each screenshot is produced from the app
 ├── ui_strings.csv         vendored copy of the app's translations
-└── strings/<locale>.yaml  the prose, plus per-audience vocabulary
+└── strings/<locale>.yaml  the prose, the glossary, and the audience wording
 kalulu_manual/
 ├── cli.py       build | capture | check | shots | sync-ui-strings
 ├── content.py   merges structure with translations
