@@ -470,5 +470,8 @@ sections:
           Sia su Windows sia su macOS, il sistema blocca per impostazione
           predefinita un'applicazione scaricata fuori dal suo store. Non è un
           guasto di Kalulu, e i passaggi da seguire sono pochi clic: sono
-          descritti nel documento «Kalulu Installation Help», allegato a ogni
-          versione sulla pagina di download.
+          descritti in <b>Kalulu-Installation-Help.pdf</b>, allegato a ogni versione sulla
+          pagina di download.
+        note: >-
+          La pagina di download di Kalulu:
+          <a href="https://github.com/Excello-Recherche-Education/Kalulu-Frontend/releases"><font color="#812a80">https://github.com/Excello-Recherche-Education/Kalulu-Frontend/releases</font></a>

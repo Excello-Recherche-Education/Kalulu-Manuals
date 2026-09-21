@@ -464,6 +464,8 @@ sections:
         body: >-
           No Windows como no macOS, o sistema bloqueia por padrão um
           aplicativo baixado fora da sua loja. Não é uma falha do Kalulu, e o
-          caminho a seguir são poucos cliques: está descrito no documento
-          «Kalulu Installation Help», anexado a cada versão na página de
-          download.
+          caminho a seguir são poucos cliques: está descrito em
+          <b>Kalulu-Installation-Help.pdf</b>, anexado a cada versão na página de download.
+        note: >-
+          A página de download do Kalulu:
+          <a href="https://github.com/Excello-Recherche-Education/Kalulu-Frontend/releases"><font color="#812a80">https://github.com/Excello-Recherche-Education/Kalulu-Frontend/releases</font></a>
