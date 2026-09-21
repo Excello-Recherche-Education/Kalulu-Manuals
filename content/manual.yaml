@@ -192,3 +192,23 @@ sections:
         shot: settings
         annotations:
           - {type: ellipse, node: "Page/Card/CardMargin/CardContent/CardActions/ExportCodesButton"}
+
+  # Last on purpose: a reader arrives here having failed at something, and a
+  # troubleshooting chapter in the middle of a walkthrough is a chapter nobody
+  # finds. Its intro carries the contact address, so the one question this
+  # chapter does not answer still has somewhere to go.
+  #
+  # No screenshots anywhere in it, and that is not laziness. Every screen it
+  # describes is conditional: the reset-password button appears only after a
+  # refused password, and the proxy field only under a network error of the
+  # right shape. Photographing them means reproducing a failure -- a blocked
+  # DNS, an intercepting antivirus, a wrong clock -- which capture cannot set
+  # up and which no screenshot would explain better than the sentence does.
+  - id: troubleshooting
+    steps:
+      - id: forgot-password
+      - id: cannot-connect
+      - id: proxy
+      - id: network-other
+      - id: student-code-lost
+      - id: desktop-wont-start

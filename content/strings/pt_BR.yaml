@@ -389,3 +389,81 @@ sections:
           «{ui:EXPORT_STUDENT_CODES}», salva novamente a folha de códigos a
           qualquer momento. Útil para reimprimi-la, ou depois de adicionar
           um estudante.
+  troubleshooting:
+    title: "Se algo não funciona"
+    intro: >-
+      Se você não encontrar abaixo a resposta para a sua pergunta, entre em
+      contato em <a href="https://excellolab.org/contact/"><font color="#812a80">https://excellolab.org/contact/</font></a>
+      ou diretamente por e-mail em <a href="mailto:contact@excellolab.org"><font color="#812a80">contact@excellolab.org</font></a>.
+    steps:
+      forgot-password:
+        title: "Senha esquecida"
+        body: >-
+          O botão «{ui:RESET_PASSWORD}» não aparece de início: ele só surge
+          depois de uma tentativa de entrada recusada pela senha, abaixo da
+          mensagem «{ui:LOGIN_WRONG_PASSWORD}». Digite então o seu e-mail
+          com qualquer senha e toque em {ui:NEXT}: o botão aparece, e ao
+          tocá-lo é enviado um link de redefinição para o endereço informado.
+        note: >-
+          O Kalulu mostra em seguida «{ui:CHECK_YOUR_EMAIL}» e o botão fica
+          inativo: apenas uma mensagem é enviada. Se a mensagem exibida for
+          «{ui:LOGIN_USER_NOT_FOUND}», o botão não vai aparecer — é o
+          e-mail que precisa ser corrigido, não a senha.
+      cannot-connect:
+        title: "O Kalulu não consegue alcançar o servidor"
+        body: >-
+          O dispositivo está conectado à Internet, mas o Kalulu avisa que o
+          servidor não responde. É a rede que bloqueia — firewall ou proxy — e
+          isso é comum em uma escola. Há duas soluções: pedir que o Kalulu
+          seja autorizado nessa rede, ou fazer a operação uma vez a partir de
+          outra rede. O roteamento do celular já basta, e depois de criada a
+          conta o aplicativo funciona sem conexão.
+        note: >-
+          Os dois domínios que o setor de informática deve autorizar, copiados
+          como estão: <b>api.kalulu.org</b>, usado para entrar e sincronizar,
+          e <b>kalulu-app-language-packs.s3.eu-west-3.amazonaws.com</b>, de
+          onde vêm os pacotes de idioma.
+      proxy:
+        title: "A rede passa por um proxy"
+        body: >-
+          Muitas redes escolares fazem todo o acesso à Internet passar por um
+          servidor intermediário chamado proxy. Os navegadores estão
+          configurados para usá-lo, mas o Kalulu não lê essa configuração por
+          conta própria e não recebe resposta alguma. Quando a falha tem esse
+          formato, a tela oferece abaixo da mensagem a opção
+          «{ui:USE_PROXY}»: marque-a, toque em {ui:PROXY_APPLY} e tente
+          novamente.
+        note: >-
+          Se o dispositivo já declara um proxy, o endereço vem preenchido e
+          basta marcar a caixa; caso contrário o setor de informática o
+          fornece, no formato <b>servidor:porta</b>. A opção só aparece abaixo
+          de uma mensagem que um proxy poderia explicar, nunca abaixo de uma
+          senha recusada — e em uma rede comum não deve ser marcada: isso
+          impediria o Kalulu de se conectar.
+      network-other:
+        title: "Outras três causas de conexão impossível"
+        body: >-
+          O Kalulu reconhece outras três situações e as escreve na tela.
+          «{ui:DNS_FILTERED_TITLE}»: um filtro de DNS — controle parental,
+          filtro da escola, roteador da operadora — desvia o api.kalulu.org, e
+          é preciso pedir o desbloqueio desse domínio.
+          «{ui:TLS_INTERCEPTED_TITLE}»: um antivírus ou controle parental
+          instalado no dispositivo inspeciona as conexões seguras; adicione
+          nele uma exceção para api.kalulu.org.
+          «{ui:CLOCK_SKEW_TITLE}»: corrija a data e a hora nas configurações
+          do dispositivo, sem elas nenhuma conexão segura é possível.
+      student-code-lost:
+        title: "Um estudante esqueceu o código"
+        body: >-
+          Os códigos podem ser consultados a qualquer momento em
+          {ui:SETTINGS}, na linha «{ui:STUDENT_CODES}», e a folha
+          imprimível pode ser salva novamente na mesma tela — veja
+          «Sincronização e folha de códigos».
+      desktop-wont-start:
+        title: "O aplicativo não abre no computador"
+        body: >-
+          No Windows como no macOS, o sistema bloqueia por padrão um
+          aplicativo baixado fora da sua loja. Não é uma falha do Kalulu, e o
+          caminho a seguir são poucos cliques: está descrito no documento
+          «Kalulu Installation Help», anexado a cada versão na página de
+          download.
