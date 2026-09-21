@@ -25,7 +25,7 @@ version: 1
 # from the frontend would put an unreleased internal version on the cover of a
 # document handed to teachers. `kalulu-manual check` prints both so the gap
 # stays visible on purpose rather than by neglect.
-app_version: "3.1.2"
+app_version: "3.1.5"
 
 # The languages Kalulu's interface is translated into, which is what a manual
 # about using that interface has to follow. See README, "Languages".
