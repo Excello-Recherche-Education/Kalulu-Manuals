@@ -112,8 +112,9 @@ sections:
         title: "Indicare il tipo di account"
         body: >-
           Scegli «{ui:TEACHER}» se gli studenti usano Kalulu in classe,
-          «{ui:PARENT}» se si tratta dei tuoi figli a casa. Da questa risposta
-          dipendono le schermate successive.
+          «{ui:PARENT}» se si tratta dei tuoi figli a casa. Questa scelta
+          cambia solo le schermate di creazione che seguono: non limita nulla
+          in seguito e si può modificare in {ui:SETTINGS}.
       method:
         title: "Scegliere il metodo educativo"
         body: >-

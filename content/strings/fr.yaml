@@ -106,7 +106,8 @@ sections:
         body: >-
           Choisissez « {ui:TEACHER} » si les étudiants utilisent Kalulu en
           classe, « {ui:PARENT} » s'il s'agit de vos enfants à la maison.
-          C'est cette réponse qui détermine les écrans suivants.
+          Ce choix ne change que les écrans de création qui suivent : il ne
+          restreint rien ensuite, et reste modifiable dans {ui:SETTINGS}.
       method:
         title: "Choisir la méthode d'éducation"
         body: >-
