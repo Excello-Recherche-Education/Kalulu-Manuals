@@ -18,6 +18,14 @@ two ways:
   each audience follows and where everyone rejoins. It is computed from the
   structure, so re-ordering a flow cannot leave it pointing at the wrong step
   numbers -- the same reason annotations anchor to nodes and not to pixels.
+
+The front and back covers are the designer's artwork, not drawn here:
+`assets/covers/<locale>.pdf`, two pages each. ReportLab cannot place a page of
+another PDF, so the manual is laid out with a blank first and last page and the
+artwork is stamped underneath those two once the layout is final. Laying out
+first keeps every page number the contents quotes true; stamping *underneath*
+lets the cover still carry the app version and the draft banner, which change
+per build and which no designer can draw.
 """
 from __future__ import annotations
 
@@ -25,6 +33,7 @@ from datetime import date
 from pathlib import Path
 
 from PIL import Image
+from pypdf import PdfReader, PdfWriter, Transformation
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -46,6 +55,11 @@ from reportlab.platypus import (
 from . import theme
 from .model import Manual, Section, Step
 from .shots import ShotLibrary
+
+#: The designer's cover artwork, one two-page PDF (front, back) per locale.
+COVERS = Path(__file__).resolve().parent.parent / "assets" / "covers"
+
+_UNREVIEWED = "DRAFT - this translation has not been reviewed by a native speaker."
 
 
 def _styles() -> dict[str, ParagraphStyle]:
@@ -199,9 +213,15 @@ class Heading(Paragraph):
 
 
 class ManualDoc(BaseDocTemplate):
-    """Two page templates: a full-bleed navy cover, then the body."""
+    """Three page templates: the cover, the body, the back cover.
 
-    def __init__(self, path: Path, manual: Manual):
+    With designer artwork the cover template draws only what changes per
+    build, and the artwork goes underneath afterwards (see `_stamp_covers`).
+    Without it the cover is a plain navy page, and there is no back cover.
+    """
+
+    def __init__(self, path: Path, manual: Manual, *, artwork: Path | None = None,
+                 labels: dict[str, str] | None = None):
         super().__init__(
             str(path),
             pagesize=theme.PAGE_SIZE,
@@ -214,6 +234,7 @@ class ManualDoc(BaseDocTemplate):
             subject=f"{', '.join(manual.audiences)} / {manual.locale}".lstrip(" /"),
         )
         self.manual = manual
+        self.labels = labels or {}
         width = theme.PAGE_SIZE[0] - theme.MARGIN_LEFT - theme.MARGIN_RIGHT
         height = theme.PAGE_SIZE[1] - theme.MARGIN_TOP - theme.MARGIN_BOTTOM
         body_frame = Frame(theme.MARGIN_LEFT, theme.MARGIN_BOTTOM, width, height, id="body")
@@ -221,8 +242,10 @@ class ManualDoc(BaseDocTemplate):
             theme.MARGIN_LEFT, theme.MARGIN_BOTTOM + 40 * mm, width, height - 40 * mm, id="cover"
         )
         self.addPageTemplates([
-            PageTemplate(id="cover", frames=[cover_frame], onPage=self._cover_background),
+            PageTemplate(id="cover", frames=[cover_frame],
+                         onPage=self._cover_stamp if artwork else self._cover_background),
             PageTemplate(id="body", frames=[body_frame], onPage=self._footer),
+            PageTemplate(id="back", frames=[body_frame]),
         ])
 
     def afterFlowable(self, flowable) -> None:
@@ -247,6 +270,31 @@ class ManualDoc(BaseDocTemplate):
         canvas.rect(0, 0, *theme.PAGE_SIZE, stroke=0, fill=1)
         canvas.setFillColor(theme.PURPLE)
         canvas.rect(0, 0, theme.PAGE_SIZE[0], 26 * mm, stroke=0, fill=1)
+        canvas.restoreState()
+
+    def _cover_stamp(self, canvas, _doc) -> None:
+        """What artwork cannot carry: which build this is, and whether its
+        translation has been read. Small and centred, below the artwork's title."""
+        manual, labels = self.manual, self.labels
+        centre = theme.PAGE_SIZE[0] / 2
+        meta = [
+            f"{labels.get('app_version', 'Kalulu')} {manual.app_version}"
+            if manual.app_version else "",
+            f"{labels.get('generated', 'Generated')} {date.today().isoformat()}",
+        ]
+        canvas.saveState()
+        canvas.setFont(theme.BODY, 8.5)
+        canvas.setFillColor(theme.NAVY)
+        canvas.drawCentredString(centre, 16 * mm, "  ·  ".join(m for m in meta if m))
+        if not manual.reviewed:
+            text = labels.get("unreviewed", _UNREVIEWED)
+            width = pdfmetrics.stringWidth(text, theme.BODY_BOLD, 8.5) + 8 * mm
+            canvas.setFillColor(theme.WARNING)
+            canvas.roundRect(centre - width / 2, 24 * mm, width, 7 * mm, 3.5 * mm,
+                             stroke=0, fill=1)
+            canvas.setFont(theme.BODY_BOLD, 8.5)
+            canvas.setFillColor(theme.NAVY)
+            canvas.drawCentredString(centre, 26.4 * mm, text)
         canvas.restoreState()
 
     def _footer(self, canvas, doc) -> None:
@@ -401,35 +449,25 @@ def build_pdf(
     labels = labels or {}
     audiences = Audiences(manual, labels)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    doc = ManualDoc(out_path, manual)
+    artwork: Path | None = COVERS / f"{manual.locale}.pdf"
+    if not artwork.exists():
+        manual.warnings.append(
+            f"no cover artwork at assets/covers/{manual.locale}.pdf"
+            " - plain cover and no back cover (see tools/derive_cover.py)"
+        )
+        artwork = None
+    doc = ManualDoc(out_path, manual, artwork=artwork, labels=labels)
     width = theme.CONTENT_WIDTH
 
     story: list = []
 
     # -- cover ----------------------------------------------------------------
-    story.append(Paragraph(manual.title, styles["cover_title"]))
-    story.append(Spacer(1, 4 * mm))
-    if manual.subtitle:
-        story.append(Paragraph(manual.subtitle, styles["cover_sub"]))
-    story.append(Spacer(1, 10 * mm))
-    meta = [
-        f"{labels.get('language', 'Language')}: {manual.locale}",
-        f"{labels.get('app_version', 'Kalulu')}: {manual.app_version}" if manual.app_version else "",
-        f"{labels.get('generated', 'Generated')}: {date.today().isoformat()}",
-    ]
-    story.append(Paragraph("<br/>".join(m for m in meta if m), styles["cover_meta"]))
-    if not manual.reviewed:
-        story.append(Spacer(1, 8 * mm))
-        story.append(
-            Paragraph(
-                labels.get(
-                    "unreviewed",
-                    "DRAFT - this translation has not been reviewed by a native speaker.",
-                ),
-                ParagraphStyle("warn", parent=styles["cover_meta"], textColor=theme.WARNING,
-                               fontName=theme.BODY_BOLD),
-            )
-        )
+    if artwork:
+        # The page has to exist to be stamped. What it shows is drawn by its
+        # template and by the artwork, so the frame holds nothing visible.
+        story.append(Spacer(1, 1))
+    else:
+        story.extend(_plain_cover(manual, styles, labels))
 
     # -- contents -------------------------------------------------------------
     story.append(NextPageTemplate("body"))
@@ -472,12 +510,69 @@ def build_pdf(
         if index != len(manual.sections):
             story.append(PageBreak())
 
+    if artwork:
+        story.append(NextPageTemplate("back"))
+        story.append(PageBreak())
+        story.append(Spacer(1, 1))
+
     # Two passes: the first discovers which page each heading fell on, the
     # second lays the contents out knowing them. Page numbers can shift between
     # passes -- a longer contents page pushes everything down -- so ReportLab
     # repeats until they stop moving.
     doc.multiBuild(story)
+    if artwork:
+        _stamp_covers(out_path, artwork)
     return out_path
+
+
+def _plain_cover(manual: Manual, styles: dict[str, ParagraphStyle],
+                 labels: dict[str, str]) -> list:
+    """The cover of a language that has no artwork yet: title and meta on navy."""
+    story: list = [Paragraph(manual.title, styles["cover_title"]), Spacer(1, 4 * mm)]
+    if manual.subtitle:
+        story.append(Paragraph(manual.subtitle, styles["cover_sub"]))
+    story.append(Spacer(1, 10 * mm))
+    meta = [
+        f"{labels.get('language', 'Language')}: {manual.locale}",
+        f"{labels.get('app_version', 'Kalulu')}: {manual.app_version}" if manual.app_version else "",
+        f"{labels.get('generated', 'Generated')}: {date.today().isoformat()}",
+    ]
+    story.append(Paragraph("<br/>".join(m for m in meta if m), styles["cover_meta"]))
+    if not manual.reviewed:
+        story.append(Spacer(1, 8 * mm))
+        story.append(
+            Paragraph(
+                labels.get("unreviewed", _UNREVIEWED),
+                ParagraphStyle("warn", parent=styles["cover_meta"], textColor=theme.WARNING,
+                               fontName=theme.BODY_BOLD),
+            )
+        )
+    return story
+
+
+def _stamp_covers(path: Path, artwork: Path) -> None:
+    """Put the artwork's front under the first page and its back under the last.
+
+    Cloning the built file keeps its outline, the contents' links and the
+    open-with-bookmarks setting; only those two pages' contents change. The
+    artwork is A5 and the manual A4 -- the same proportions -- so it is scaled
+    to fill the page exactly, and centred should that ever stop being true.
+    """
+    covers = PdfReader(artwork)
+    if len(covers.pages) != 2:
+        raise ValueError(f"{artwork}: expected 2 pages (front, back), found {len(covers.pages)}")
+    writer = PdfWriter(clone_from=str(path))
+    page_w, page_h = theme.PAGE_SIZE
+    for target, source in ((writer.pages[0], covers.pages[0]),
+                           (writer.pages[-1], covers.pages[1])):
+        w, h = float(source.mediabox.width), float(source.mediabox.height)
+        scale = min(page_w / w, page_h / h)
+        placed = Transformation().scale(scale).translate(
+            (page_w - w * scale) / 2, (page_h - h * scale) / 2
+        )
+        target.merge_transformed_page(source, placed, over=False)
+    with path.open("wb") as handle:
+        writer.write(handle)
 
 
 def _step_flowables(

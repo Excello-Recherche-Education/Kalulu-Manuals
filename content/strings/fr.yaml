@@ -3,7 +3,7 @@ locale: fr
 reviewed: true
 
 meta:
-  title: "Manuel d'utilisation de Kalulu"
+  title: "Guide d’utilisation de l’application Kalulu"
   # One subtitle, naming both readers: nobody has to pick a side before
   # opening the document.
   subtitle: "Pour les enseignants et les parents — créer un compte, gérer les étudiants"
@@ -13,7 +13,7 @@ meta:
 # spaces or apostrophes, because it travels through download links and mail
 # attachments. The locale tag stays: every language is offered from one page.
 filenames:
-  manual: "Kalulu-Manuel-fr"
+  manual: "Kalulu-Guide-fr"
 
 labels:
   contents: "Sommaire"
@@ -50,15 +50,15 @@ sections:
   getting-started:
     title: "Prise en main"
     intro: >-
-      Kalulu enseigne la lecture par la méthode du décodage. Ce manuel
+      Kalulu enseigne la lecture par la méthode du décodage. Ce guide
       couvre tout ce qui se passe avant le jeu lui-même : créer le compte,
       s'y connecter, et gérer les étudiants.
     steps:
       who-this-is-for:
-        title: "Un seul manuel, pour les enseignants et les parents"
+        title: "Un seul guide, pour les enseignants et les parents"
         body: >-
           Kalulu s'utilise en classe comme à la maison, et presque tout s'y
-          passe de la même façon. Ce manuel couvre donc les deux : lisez-le du
+          passe de la même façon. Ce guide couvre donc les deux : lisez-le du
           début à la fin, sans avoir à choisir entre deux documents.
         note: >-
           Les rares étapes qui ne concernent qu'un seul lecteur portent une

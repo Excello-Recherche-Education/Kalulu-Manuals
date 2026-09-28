@@ -12,10 +12,10 @@ educational app that helps children learn to read through the decoding
 
 ```
 build/manuals/
-├── Kalulu-Manuel-fr.pdf
+├── Kalulu-Guide-fr.pdf
 ├── Kalulu-Manual-es.pdf
 ├── Kalulu-Manual-pt-BR.pdf
-└── Kalulu-Manuale-it.pdf
+└── Kalulu-Guida-it.pdf
 ```
 
 One file per language, and **one file is all there is per language**: a reader
@@ -30,6 +30,12 @@ files are handed to the public: a Spanish reader should not be downloading
 links and mail attachments; the locale tag stays because every language is
 offered from one page, and the build refuses to start if two manuals would
 land on one filename.
+
+**The title is the one on the designer's cover**, and `meta.title`, the file
+name and the prose that names the document ("ce guide", "questa guida") all
+follow it: a *guide* in French and Italian, a *manual* in Spanish and
+Portuguese. Change the cover's wording and those follow it too, or the page
+footers will disagree with the cover.
 
 Each covers how the game is played — the chain of gardens, what a lesson is,
 bosses, the brain screen — then creating an account, signing in, how a child
@@ -135,6 +141,29 @@ makes the split visible as two.
 `vocabulary:` in each language file is now a plain glossary: a word the
 document leans on, named once so every section names it the same way.
 
+## Covers
+
+The first and last page of every manual are the graphic designer's artwork,
+not something the generator draws: `assets/covers/<locale>.pdf`, two A5 pages
+each — the front, then the back. The build lays the manual out with a blank
+first and last page, then stamps the artwork underneath those two, scaled up to
+A4 (the same proportions, so it fills the page exactly). Only what changes per
+build is drawn on top of the front: the app version, the date, and the draft
+banner for an unreviewed translation.
+
+`fr`, `es` and `pt_BR` were drawn by the designer. `it` was not; it is derived
+from the French pair by `tools/derive_cover.py`, which keeps every drawn element
+and resets only the words, in the same face, size and position:
+
+```bash
+python tools/derive_cover.py it
+```
+
+Its output is committed like the drawn ones, so a build never runs it. A new
+interface language gets its cover the same way — add its wording to that
+script — or, better, from the designer. Until it has one, its manual builds
+with the old plain navy cover and no back cover, and the build says so.
+
 ## Content packs
 
 The gameplay screens read their letters from a language **pack**, and the packs
@@ -212,6 +241,7 @@ kalulu_manual/
 ├── render.py    the PDF
 └── theme.py     palette and fonts, from the app's design tokens
 assets/
+├── covers/      the designer's front and back cover, one <locale>.pdf each
 ├── fonts/       Mulish (OFL), converted to TrueType — see tools/otf_to_ttf.py
 └── screenshots/ overrides for screens the harness cannot reach
 ```
