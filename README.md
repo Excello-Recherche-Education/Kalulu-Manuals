@@ -48,11 +48,17 @@ sidebar. Page numbers come from a two-pass build, so they are the real ones.
 
 ## The installation help
 
-One more PDF lives here, and it is not one of the manuals:
+One more PDF lives here, in English and in French, and it is not one of the
+manuals:
 
 ```
-installation-help/Kalulu Installation Help.pdf
+installation-help/Kalulu Installation Help EN.pdf
+installation-help/Kalulu Aide Installation FR.pdf
 ```
+
+Each name is in its own language and ends in its language code, so a reader on
+the release page can pick theirs without opening either. The guides for the
+other languages point at the English one.
 
 It covers getting a desktop build to launch — placing the two Windows files and
 answering SmartScreen, and on macOS the several ways past Gatekeeper for an app
@@ -62,13 +68,14 @@ tell which one they needed until they opened it. Now it opens on a contents page
 that sends them to their platform.
 
 ```bash
-python tools/build_installation_help.py
+python tools/build_installation_help.py          # both languages
+python tools/build_installation_help.py fr       # one
 ```
 
-**It is the one PDF committed to this repository.** The manuals are not, because
-they are regenerated from the app on every release and would only bloat the
-history. This one is written by hand, does not change per release, and the
-release pipeline attaches it to every GitHub release — so it has to be in a
+**They are the only PDFs committed to this repository.** The manuals are not,
+because they are regenerated from the app on every release and would only bloat
+the history. These are written by hand, do not change per release, and the
+release pipeline attaches both to every GitHub release — so they have to be in a
 fresh clone, and cannot live in the gitignored `build/`.
 
 ## Why generate them

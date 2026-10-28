@@ -1,23 +1,36 @@
-"""Build "Kalulu Installation Help.pdf" - one guide covering both desktop platforms.
+"""Build the installation help - one guide covering both desktop platforms, in
+English and in French:
+
+    installation-help/Kalulu Installation Help EN.pdf
+    installation-help/Kalulu Aide Installation FR.pdf
 
 There used to be two separate documents handed out on their own: a Word file for
 Windows and a PDF for macOS. A person downloading a build does not know which
 one they need until they have opened it, so this merges them into a single PDF
 that opens on a contents page and sends the reader to their platform.
 
-The text is transcribed from those two originals. Two deliberate departures,
-both marked in the source below:
+Each file name is written in its own language and ends in the language code, so
+a reader on the release page can tell which one is theirs without opening
+either - "Installation Help" alone says nothing to a French reader.
+
+The English text is transcribed from those two originals, and the French is a
+translation of it that names the controls the way a French Windows or macOS
+labels them. Three deliberate departures from the originals, all marked in the
+source below:
 
   * the macOS download step also names the .zip, because that is what the
     GitHub release actually ships - the original only described the .dmg;
-  * the app bundle is written "Kalulu.app", which is its real name.
+  * the app bundle is written "Kalulu.app", which is its real name;
+  * the Windows steps start from the .zip and name Kalulu-Windows.exe, which is
+    what that zip contains - the original said "Kalulu.exe".
 
-Unlike the per-language manuals, this one is not generated from the app and
-does not change per release, so the built PDF is committed next to this script
+Unlike the per-language manuals, these are not generated from the app and do
+not change per release, so the built PDFs are committed next to this script
 rather than left in the gitignored build/ directory: the release pipeline
-attaches it to every GitHub release and has to find it in a fresh clone.
+attaches them to every GitHub release and has to find them in a fresh clone.
 
-    python tools/build_installation_help.py
+    python tools/build_installation_help.py          # both
+    python tools/build_installation_help.py fr       # one
 """
 from __future__ import annotations
 
@@ -45,8 +58,7 @@ from reportlab.platypus.tableofcontents import TableOfContents  # noqa: E402
 
 from kalulu_manual import theme  # noqa: E402
 
-OUT = ROOT / "installation-help" / "Kalulu Installation Help.pdf"
-TITLE = "Kalulu - Installation Help"
+OUT_DIR = ROOT / "installation-help"
 
 # Mulish carries no emoji and no arrows: U+26A0, U+2705, U+25B8, U+2192 and the
 # non-breaking hyphen U+2011 are all absent, and ReportLab would draw nothing at
@@ -55,20 +67,34 @@ TITLE = "Kalulu - Installation Help"
 # and the one that has a real equivalent, the separator, becomes U+203A.
 CHEVRON = "›"
 
+# French puts a non-breaking space inside guillemets and before : ; ! ?. The
+# narrow one typographers prefer, U+202F, is missing from Mulish too, so this is
+# the ordinary U+00A0.
+NBSP = "&#160;"
+
+
+def guillemets(text: str) -> str:
+    return f"«{NBSP}{text}{NBSP}»"
+
 
 # --- content -----------------------------------------------------------------
 # ("heading", text) | ("para", text) | ("steps", [text, ...])
 # ("bullets", [...]) | ("code", [line, ...]) | ("callout", (title, text))
 # ("note", text)
 
-WINDOWS = [
+WINDOWS_EN = [
+    # Departure from the original, which said "Kalulu.exe" and spoke of two
+    # loose files: the release ships one zip, and the program inside it is
+    # Kalulu-Windows.exe.
     ("steps", [
-        "<b>Download and place the files.</b> Take the two files "
-        "<font face='Courier'>Kalulu.exe</font> and "
-        "<font face='Courier'>libgdsqlite.windows.template_release.x86_64.dll</font> "
-        "and put them together in the same folder on your computer.",
+        "<b>Download and place the files.</b> Extract "
+        "<font face='Courier'>Kalulu-Windows-&lt;version&gt;.zip</font> from the "
+        "releases page. Keep the two files it contains, "
+        "<font face='Courier'>Kalulu-Windows.exe</font> and "
+        "<font face='Courier'>libgdsqlite.windows.template_release.x86_64.dll</font>, "
+        "together in the same folder on your computer.",
         "<b>Run the program.</b> Double-click on "
-        "<font face='Courier'>Kalulu.exe</font>.",
+        "<font face='Courier'>Kalulu-Windows.exe</font>.",
         "<b>If you get a security warning.</b> If a message appears saying the "
         "program is unrecognized or has been blocked, look for an option such as "
         "<b>&#8220;Run anyway&#8221;</b> or <b>&#8220;Allow execution&#8221;</b>, "
@@ -77,7 +103,7 @@ WINDOWS = [
     ("callout", ("Done!", "The game should now launch and work correctly.")),
 ]
 
-MACOS = [
+MACOS_EN = [
     ("callout", ("Important", (
         "Run Kalulu only if you fully trust its source. Messages like "
         "&#8220;The application is damaged&#8221; or &#8220;Apple cannot check it "
@@ -162,10 +188,150 @@ MACOS = [
              "it and contact the publisher for a signed / notarized build."),
 ]
 
-SECTIONS = [
-    ("Windows", "Windows 10 and Windows 11", WINDOWS),
-    ("macOS", "macOS 10.13 and later", MACOS),
+# The French follows the English block for block. Controls are named as a French
+# system labels them: "Exécuter quand même" in SmartScreen, "Ouvrir quand même",
+# "Réglages Système", "Confidentialité et sécurité" on macOS.
+
+WINDOWS_FR = [
+    ("steps", [
+        "<b>Télécharger et placer les fichiers.</b> Décompressez "
+        "<font face='Courier'>Kalulu-Windows-&lt;version&gt;.zip</font>, "
+        "téléchargé depuis la page des versions. Gardez ensemble, dans le même "
+        "dossier de votre ordinateur, les deux fichiers qu’il contient"
+        f"{NBSP}: <font face='Courier'>Kalulu-Windows.exe</font> et "
+        "<font face='Courier'>libgdsqlite.windows.template_release.x86_64.dll</font>.",
+        "<b>Lancer le programme.</b> Double-cliquez sur "
+        "<font face='Courier'>Kalulu-Windows.exe</font>.",
+        "<b>En cas d’avertissement de sécurité.</b> Si un message indique que le "
+        "programme n’est pas reconnu ou qu’il a été bloqué, cherchez une option "
+        f"comme <b>{guillemets('Exécuter quand même')}</b> ou "
+        f"<b>{guillemets('Autoriser l’exécution')}</b>, et cliquez dessus pour "
+        "continuer.",
+    ]),
+    ("callout", (f"C’est prêt{NBSP}!",
+                 "Le jeu devrait maintenant se lancer et fonctionner normalement.")),
 ]
+
+MACOS_FR = [
+    ("callout", ("Important", (
+        "N’exécutez Kalulu que si vous avez entièrement confiance en sa "
+        f"provenance. Des messages comme {guillemets('L’application est endommagée')} "
+        f"ou {guillemets('Apple ne peut pas vérifier l’absence de logiciel malveillant')} "
+        "signifient souvent que l’application n’est pas signée ou qu’elle est "
+        "marquée comme mise en quarantaine (pas forcément qu’elle est corrompue)."
+    ))),
+    ("heading2", "Télécharger et installer"),
+    ("steps", [
+        "Retrouvez le fichier téléchargé, en général dans <b>Téléchargements</b>"
+        f"{NBSP}: <font face='Courier'>Kalulu-macOS-&lt;version&gt;.zip</font> "
+        "depuis la page des versions, ou <font face='Courier'>Kalulu.dmg</font>.",
+        "Ouvrez-le. Un zip se décompresse en "
+        f"<font face='Courier'>Kalulu.app</font>{NBSP}; un .dmg ouvre un volume "
+        "<i>Kalulu</i> dans le Finder.",
+        "Faites glisser <font face='Courier'>Kalulu.app</font> dans "
+        "<b>Applications</b>.",
+        "Si vous avez ouvert un .dmg, éjectez le volume <i>Kalulu</i> depuis le "
+        "Finder (l’icône d’éjection).",
+    ]),
+    ("note", f"Pour faire la copie dans le Terminal{NBSP}:"),
+    ("code", ['cp -R "/Volumes/Kalulu/Kalulu.app" "/Applications/Kalulu.app"']),
+
+    ("heading2", f"Méthode 1 {CHEVRON} Clic droit, Ouvrir (recommandé)"),
+    ("steps", [
+        "Ouvrez <b>/Applications</b>.",
+        "Faites un clic droit (ou Ctrl-clic) sur "
+        f"<font face='Courier'>Kalulu.app</font> {CHEVRON} <b>Ouvrir</b>.",
+        "Dans la fenêtre "
+        f"{guillemets('<i>provient d’un développeur non identifié</i>')}, "
+        "cliquez sur <b>Ouvrir</b>.",
+    ]),
+    ("note", f"macOS crée alors une exception Gatekeeper{NBSP}: dès le deuxième "
+             "lancement, un double-clic normal suffit."),
+
+    ("heading2", f"Méthode 2 {CHEVRON} Réglages Système, Confidentialité et sécurité"),
+    ("steps", [
+        "Essayez d’abord un double-clic sur "
+        f"<font face='Courier'>Kalulu.app</font>{NBSP}: laissez macOS le bloquer, "
+        "puis fermez l’alerte.",
+        f"Allez dans le menu Pomme {CHEVRON} <b>Réglages Système</b> {CHEVRON} "
+        "<b>Confidentialité et sécurité</b> (versions plus anciennes"
+        f"{NBSP}: <b>Préférences Système</b> {CHEVRON} "
+        "<b>Sécurité et confidentialité</b>).",
+        "Faites défiler jusqu’à "
+        f"{guillemets('<i>Kalulu.app a été bloqué…</i>')}.",
+        "Cliquez sur <b>Ouvrir quand même</b>, puis confirmez avec <b>Ouvrir</b>.",
+    ]),
+
+    ("heading2", f"Méthode 3 {CHEVRON} Terminal, pour le message "
+                 f"{guillemets('est endommagé')}"),
+    ("para", "Ce message vient souvent de l’attribut de quarantaine. Supprimez-le "
+             "avec le Terminal (<b>Applications</b> " + CHEVRON + " <b>Utilitaires</b> "
+             + CHEVRON + f" <b>Terminal</b>){NBSP}:"),
+    ("code", ['xattr -dr com.apple.quarantine "/Applications/Kalulu.app"']),
+    ("note", "Relancez ensuite Kalulu.app, idéalement avec la méthode 1 "
+             "(clic droit, Ouvrir)."),
+
+    ("heading2", f"Avancé{NBSP}: désactiver temporairement Gatekeeper (déconseillé)"),
+    ("para", "À n’utiliser que si tout ce qui précède a échoué."),
+    ("code", [
+        "# Désactiver Gatekeeper",
+        "sudo spctl --master-disable",
+        "# Ouvrir l'application une fois",
+        'open "/Applications/Kalulu.app"',
+        "# Réactiver Gatekeeper",
+        "sudo spctl --master-enable",
+    ]),
+
+    ("heading2", "Dépannage rapide"),
+    ("bullets", [
+        f"Rien ne se passe au double-clic{NBSP}: utilisez la méthode 1 "
+        "(clic droit, Ouvrir).",
+        f"Le message {guillemets('endommagé')} s’affiche encore{NBSP}: lancez la "
+        "commande <font face='Courier'>xattr</font> ci-dessus, puis réessayez la "
+        "méthode 1.",
+        f"L’application est restée dans le .dmg{NBSP}: vérifiez que vous avez bien "
+        "copié <font face='Courier'>Kalulu.app</font> dans <b>/Applications</b>, "
+        "puis éjecté le .dmg.",
+        f"Chemins contenant des espaces{NBSP}: gardez les guillemets dans les "
+        "commandes, par exemple "
+        "<font face='Courier'>&quot;/Applications/Kalulu app.app&quot;</font>.",
+        f"Pas de bouton <b>Ouvrir quand même</b>{NBSP}: tentez un lancement juste "
+        "avant, puis revenez dans Confidentialité et sécurité.",
+        "Après le premier lancement réussi, un simple double-clic suffit pour les "
+        "suivants.",
+    ]),
+
+    ("heading2", "En cas de doute"),
+    ("para", "Si vous ne reconnaissez pas l’application ou sa provenance, ne "
+             "l’ouvrez pas et demandez à l’éditeur une version signée / notarisée."),
+]
+
+LANGUAGES = {
+    "en": {
+        "file": "Kalulu Installation Help EN.pdf",
+        "title": "Kalulu - Installation Help",
+        "subject": "Installing and launching Kalulu on Windows and macOS",
+        "intro": "Installing and launching Kalulu on a desktop computer. "
+                 "Read only the section for the machine you are using.",
+        "contents": "Contents",
+        "sections": [
+            ("Windows", "Windows 10 and Windows 11", WINDOWS_EN),
+            ("macOS", "macOS 10.13 and later", MACOS_EN),
+        ],
+    },
+    "fr": {
+        "file": "Kalulu Aide Installation FR.pdf",
+        "title": "Kalulu - Aide à l’installation",
+        "subject": "Installer et lancer Kalulu sous Windows et macOS",
+        "intro": "Installer et lancer Kalulu sur un ordinateur. "
+                 "Ne lisez que la section correspondant à votre machine.",
+        "contents": "Sommaire",
+        "sections": [
+            ("Windows", "Windows 10 et Windows 11", WINDOWS_FR),
+            ("macOS", "macOS 10.13 et versions ultérieures", MACOS_FR),
+        ],
+    },
+}
 
 
 # --- styles ------------------------------------------------------------------
@@ -294,15 +460,16 @@ def blocks_to_flowables(blocks, st) -> list:
 class HelpDoc(BaseDocTemplate):
     """Two-pass build so the contents page carries real page numbers."""
 
-    def __init__(self, path, st):
+    def __init__(self, path, st, lang):
         super().__init__(
             str(path), pagesize=theme.PAGE_SIZE,
             leftMargin=theme.MARGIN_LEFT, rightMargin=theme.MARGIN_RIGHT,
             topMargin=theme.MARGIN_TOP, bottomMargin=theme.MARGIN_BOTTOM,
-            title=TITLE, author="Excello Recherche & Education",
-            subject="Installing and launching Kalulu on Windows and macOS",
+            title=lang["title"], author="Excello Recherche & Education",
+            subject=lang["subject"],
         )
         self.st = st
+        self.help_title = lang["title"]
         frame = Frame(self.leftMargin, self.bottomMargin,
                       self.width, self.height, id="body")
         self.addPageTemplates([PageTemplate(id="page", frames=[frame],
@@ -312,7 +479,7 @@ class HelpDoc(BaseDocTemplate):
         canv.saveState()
         canv.setFont(theme.BODY, 8)
         canv.setFillColor(theme.GREY)
-        canv.drawString(theme.MARGIN_LEFT, 11 * mm, TITLE)
+        canv.drawString(theme.MARGIN_LEFT, 11 * mm, self.help_title)
         canv.drawRightString(theme.PAGE_SIZE[0] - theme.MARGIN_RIGHT, 11 * mm,
                              str(canv.getPageNumber()))
         canv.setStrokeColor(theme.GREY_LIGHTER)
@@ -330,22 +497,19 @@ class HelpDoc(BaseDocTemplate):
             self.canv.addOutlineEntry(text, key, level=0, closed=False)
 
 
-def build() -> Path:
+def build(code: str) -> Path:
+    lang = LANGUAGES[code]
     st = styles()
     story: list = [
-        Paragraph(TITLE, st["title"]),
-        Paragraph(
-            "Installing and launching Kalulu on a desktop computer. "
-            "Read only the section for the machine you are using.",
-            st["subtitle"],
-        ),
+        Paragraph(lang["title"], st["title"]),
+        Paragraph(lang["intro"], st["subtitle"]),
     ]
 
     toc = TableOfContents()
     toc.levelStyles = [st["toc"]]
-    story += [Paragraph("Contents", st["h2"]), toc]
+    story += [Paragraph(lang["contents"], st["h2"]), toc]
 
-    for i, (name, sub, blocks) in enumerate(SECTIONS):
+    for i, (name, sub, blocks) in enumerate(lang["sections"]):
         if i:
             story.append(PageBreak())
         else:
@@ -355,11 +519,17 @@ def build() -> Path:
         story.append(KeepTogether([head, Paragraph(sub, st["h1sub"])]))
         story += blocks_to_flowables(blocks, st)
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    HelpDoc(OUT, st).multiBuild(story)
-    return OUT
+    out = OUT_DIR / lang["file"]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    HelpDoc(out, st, lang).multiBuild(story)
+    return out
 
 
 if __name__ == "__main__":
-    p = build()
-    print(f"wrote {p}  ({p.stat().st_size / 1024:.0f} KB)")
+    codes = sys.argv[1:] or list(LANGUAGES)
+    unknown = [c for c in codes if c not in LANGUAGES]
+    if unknown:
+        sys.exit(f"unknown language: {', '.join(unknown)} (have: {', '.join(LANGUAGES)})")
+    for code in codes:
+        p = build(code)
+        print(f"wrote {p}  ({p.stat().st_size / 1024:.0f} KB)")
