@@ -20,6 +20,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from . import fonts
 from .model import Annotation
 
 #: Everything is drawn against this reference width, then scaled by the caller.
@@ -29,13 +30,11 @@ NAVY = (42, 54, 125)
 GREY = (112, 107, 111)
 LAVENDER = (242, 235, 245)
 
-_FONT_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
 
 
 def _font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    name = "kalulu_mulish_bold.ttf" if bold else "kalulu_mulish_regular.ttf"
-    path = _FONT_DIR / name
-    if path.exists():
+    path = fonts.mulish("bold" if bold else "regular")
+    if path is not None:
         try:
             return ImageFont.truetype(str(path), size)
         except OSError:

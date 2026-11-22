@@ -190,6 +190,10 @@ not depend on which packs happen to be installed on this machine.
   with `--recurse-submodules` puts both in the right place.
 - Godot 4.7, for capture only. Found via `$GODOT`, then the Steam install, then
   `PATH` — the same order as Kalulu-Main's `scripts/kalulu-env.sh`.
+- **`kalulu-fonts/` checked out**: `git submodule update --init`, unless this
+  repository was cloned with `--recurse-submodules`. Without it the manual is
+  set in Helvetica, with a warning. Mulish is converted to TrueType into
+  `build/fonts/` the first time it is needed, with fontTools.
 
 ```bash
 uv venv && uv pip install -e .
@@ -239,6 +243,7 @@ content/
 ├── shots.yaml             how each screenshot is produced from the app
 ├── ui_strings.csv         vendored copy of the app's translations
 └── strings/<locale>.yaml  the prose, the glossary, and the audience wording
+kalulu-fonts/              submodule: Kalulu-Fonts, the fonts every Kalulu repository uses
 kalulu_manual/
 ├── cli.py       build | capture | check | shots | sync-ui-strings
 ├── content.py   merges structure with translations
@@ -246,10 +251,10 @@ kalulu_manual/
 ├── godot/       the harness copied into the frontend
 ├── shots.py     screenshot lookup, annotation, placeholders
 ├── render.py    the PDF
+├── fonts.py     Mulish from kalulu-fonts/, converted to TrueType into build/fonts/
 └── theme.py     palette and fonts, from the app's design tokens
 assets/
 ├── covers/      the designer's front and back cover, one <locale>.pdf each
-├── fonts/       Mulish (OFL), converted to TrueType — see tools/otf_to_ttf.py
 └── screenshots/ overrides for screens the harness cannot reach
 ```
 
@@ -271,5 +276,7 @@ overlook than a crash nobody ran.
 
 ## License
 
-To be defined. Note that `assets/fonts/` carries Mulish under the SIL Open Font
-License; see `assets/fonts/OFL.txt`.
+To be defined. No font is kept here: `kalulu-fonts/` is the
+[Kalulu-Fonts](https://github.com/Excello-Recherche-Education/Kalulu-Fonts)
+repository, a submodule, and Mulish is under the SIL Open Font License (see its
+`LICENSE.md`).

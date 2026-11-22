@@ -112,7 +112,7 @@ def _overlay(size: tuple[float, float], draw):
 
 def derive(locale: str) -> Path:
     if not theme.register_fonts():
-        raise SystemExit("Mulish is not in assets/fonts; a cover set in Helvetica is not one")
+        raise SystemExit("Mulish is missing: kalulu-fonts/ is not checked out (git submodule update --init); a cover set in Helvetica is not one")
     text = COVERS_TEXT[locale]
     reader = PdfReader(COVERS / "fr.pdf")
     writer = PdfWriter()

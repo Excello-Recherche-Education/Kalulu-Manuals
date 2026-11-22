@@ -2,19 +2,19 @@
 
 The palette is transcribed from the app's own design tokens
 (`Kalulu-Frontend/sources/ui/design.gd`) so the manual and the product it
-documents look like the same thing. The typeface is the app's Mulish, converted
-to TrueType because ReportLab cannot embed CFF outlines — see
-`tools/otf_to_ttf.py`.
+documents look like the same thing. The typeface is the app's Mulish, from the
+Kalulu-Fonts submodule, converted to TrueType because ReportLab cannot embed CFF
+outlines — see `fonts.py`.
 """
 from __future__ import annotations
-
-from pathlib import Path
 
 from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+
+from . import fonts
 
 # --- Brand, from Design.PURPLE / Design.NAVY --------------------------------
 PURPLE = HexColor("#812a80")
@@ -53,7 +53,6 @@ MARGIN_TOP = 20 * mm
 MARGIN_BOTTOM = 18 * mm
 CONTENT_WIDTH = PAGE_SIZE[0] - MARGIN_LEFT - MARGIN_RIGHT
 
-_FONT_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
 
 #: Registered font names, or the Helvetica fallbacks when the TTFs are absent.
 BODY = "Helvetica"
@@ -64,7 +63,7 @@ _registered = False
 
 
 def register_fonts() -> bool:
-    """Register Mulish if it is vendored. Returns True when it was used.
+    """Register Mulish if `kalulu-fonts/` is checked out. Returns True when it was used.
 
     Falls back to Helvetica rather than failing: a manual that builds in plain
     Helvetica is far more useful than one that does not build at all, and every
@@ -74,15 +73,17 @@ def register_fonts() -> bool:
     if _registered:
         return BODY != "Helvetica"
 
-    faces = {
-        "Mulish": _FONT_DIR / "kalulu_mulish_regular.ttf",
-        "Mulish-Bold": _FONT_DIR / "kalulu_mulish_bold.ttf",
-        "Mulish-Black": _FONT_DIR / "kalulu_mulish_black.ttf",
-    }
     _registered = True
-    if not all(p.exists() for p in faces.values()):
-        return False
     try:
+        faces = {
+            "Mulish": fonts.mulish("regular"),
+            "Mulish-Bold": fonts.mulish("bold"),
+            "Mulish-Black": fonts.mulish("black"),
+        }
+        if not all(faces.values()):
+            print("warning: kalulu-fonts/ is not checked out (git submodule update --init): "
+                  "the manual is set in Helvetica")
+            return False
         for name, path in faces.items():
             pdfmetrics.registerFont(TTFont(name, str(path)))
     except Exception:  # noqa: BLE001 - a broken font must not break the build
