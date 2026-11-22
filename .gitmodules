@@ -1,0 +1,4 @@
+[submodule "kalulu-fonts"]
+	path = kalulu-fonts
+	url = https://github.com/Excello-Recherche-Education/Kalulu-Fonts.git
+	branch = main
